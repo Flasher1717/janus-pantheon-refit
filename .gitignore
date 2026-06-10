@@ -1,0 +1,26 @@
+# Data: downloaded via scripts/download_data.py, never committed
+data/
+
+# Paper PDFs: copyrighted, not redistributed in this repo
+papers/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.pyright_cache/
+
+# Caches and artifacts
+*.npz
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
