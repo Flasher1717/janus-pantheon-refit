@@ -144,7 +144,9 @@ def run_chain(
 
     sampler = EnsembleSampler(n_walkers, 1, log_prob)
     state = np.random.RandomState(spec.seed).get_state(legacy=True)
-    assert isinstance(state, tuple), "MT19937 always yields the legacy state tuple"
+    if not isinstance(state, tuple):
+        msg = "expected the legacy MT19937 state tuple from RandomState.get_state"
+        raise TypeError(msg)
     sampler.random_state = state
     sampler.run_mcmc(p0, n_steps)
 

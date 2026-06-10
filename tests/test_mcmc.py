@@ -7,6 +7,7 @@ from janus_refit.likelihood import MarginalizedChi2
 from janus_refit.mcmc import (
     LCDM_PRIOR,
     LCDM_SPEC,
+    ChainSpec,
     janus_log_prob,
     janus_prior,
     lcdm_log_prob,
@@ -57,6 +58,25 @@ class TestSyntheticChains:
         assert np.array_equal(first.samples, second.samples)
         assert first.tau == second.tau
         assert first.burn == second.burn
+
+    def test_different_seed_produces_different_chain(self) -> None:
+        """Pins the seed mechanism itself (emcee's random_state setter fails
+        silently by design): if seeding silently stopped working, both chains
+        would derive from the same fallback state and this test would catch it."""
+        chi2 = synthetic_chi2()
+        log_prob = janus_log_prob(chi2)
+        prior = janus_prior(chi2)
+        base = ChainSpec(model="Janus", param="q0", seed=11)
+        other = ChainSpec(model="Janus", param="q0", seed=12)
+        first = run_chain(log_prob, prior, base, n_steps=400)
+        second = run_chain(log_prob, prior, other, n_steps=400)
+        assert not np.array_equal(first.samples, second.samples)
+
+    def test_lcdm_synthetic_chain_is_deterministic(self) -> None:
+        chi2 = synthetic_chi2()
+        first = sample_lcdm(chi2, n_steps=600)
+        second = sample_lcdm(chi2, n_steps=600)
+        assert np.array_equal(first.samples, second.samples)
 
     def test_janus_posterior_recovers_truth_and_converges(self) -> None:
         result = sample_janus(synthetic_chi2(), n_steps=1500)

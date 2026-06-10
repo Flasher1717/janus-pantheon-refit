@@ -9,7 +9,7 @@ _LegacyRandomState = tuple[str, NDArray[np.uint32], int, int, float]
 
 class State:
     coords: NDArray[np.float64]
-    def __init__(self, coords: NDArray[np.float64], copy: bool = False) -> None: ...
+    def __init__(self, coords: NDArray[np.float64], *, copy: bool = False) -> None: ...
 
 class EnsembleSampler:
     def __init__(
@@ -28,6 +28,7 @@ class EnsembleSampler:
         self,
         initial_state: NDArray[np.float64] | State | None,
         nsteps: int,
+        *,
         progress: bool = False,
     ) -> State: ...
     def get_chain(

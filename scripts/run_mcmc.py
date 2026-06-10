@@ -17,7 +17,7 @@ from corner import corner
 
 from janus_refit.data import load_sample
 from janus_refit.likelihood import MarginalizedChi2
-from janus_refit.mcmc import MCMCResult, sample_janus, sample_lcdm
+from janus_refit.mcmc import CONVERGENCE_FACTOR, MCMCResult, sample_janus, sample_lcdm
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 FIGURES_DIR = Path(__file__).resolve().parents[1] / "figures"
@@ -45,7 +45,8 @@ def describe(result: MCMCResult) -> str:
         f"  | M7 frozen: {best:+.6f} +/- {sigma_ref:.6f}"
         f"  -> sigma rel. diff = {rel:+.2%}\n"
         f"  tau = {result.tau:.2f}  n_steps = {result.n_steps}"
-        f" (needs > {50.0 * result.tau:.0f})  burn = {result.burn}  thin = {result.thin}"
+        f" (needs > {CONVERGENCE_FACTOR * result.tau:.0f})  burn = {result.burn}"
+        f"  thin = {result.thin}"
         f"  acceptance = {result.acceptance_mean:.3f}  converged = {result.converged}"
     )
 
@@ -91,18 +92,8 @@ def main() -> int:
     )
     print(
         f"Milne     (no shape parameter): posterior is the single point"
-        f" chi2 = {MILNE_CHI2_M7} (M7, offset profiled analytically) — nothing to sample"
+        f" chi2 = {MILNE_CHI2_M7} (M7, offset profiled analytically) -- nothing to sample"
     )
-
-    if not all(result.converged for result in results):
-        print("STOP: a chain failed the pre-registered convergence criterion n_steps > 50 tau.")
-        return 2
-    if sigma_flags:
-        print(
-            f"INVESTIGATE before publishing contours: sigma rel. diff > "
-            f"{SIGMA_INVESTIGATION_THRESHOLD:.0%} vs M7 curvature for: {', '.join(sigma_flags)}"
-        )
-        return 3
 
     np.savez(
         DATA_DIR / "mcmc_chains.npz",
@@ -114,6 +105,16 @@ def main() -> int:
         janus_tau=janus.tau,
     )
     print(f"chains written to {DATA_DIR / 'mcmc_chains.npz'}; figures in {FIGURES_DIR}")
+
+    if not all(result.converged for result in results):
+        print("STOP: a chain failed the pre-registered convergence criterion n_steps > 50 tau.")
+        return 2
+    if sigma_flags:
+        print(
+            f"INVESTIGATE before publishing contours: sigma rel. diff > "
+            f"{SIGMA_INVESTIGATION_THRESHOLD:.0%} vs M7 curvature for: {', '.join(sigma_flags)}"
+        )
+        return 3
     return 0
 
 
