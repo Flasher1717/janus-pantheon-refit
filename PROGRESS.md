@@ -104,12 +104,33 @@
   in §8 (covariance ~7% overestimated per arXiv:2212.07917 → chi2/dof < 1 is a
   dataset property, not a model merit).
 
-### Next (M8 — needs GO)
-- MCMC (emcee): fixed seeds, convergence via autocorrelation, identical
-  data/covariance/marginalization for all three models (same MarginalizedChi2).
-- emcee log_prob must return -inf outside priors BEFORE calling models (validation
-  raises by design); q0 prior bound = janus_q0_min(z_max); Omega_m prior [0.01, 1.0].
-- Corner plots; curvature sigmas in RESULTS.md §7 to be superseded by posteriors.
+### Done (continued — M8, after Téo's GO with strict scope; auto-mode active)
+- M8 MCMC: janus_refit.mcmc (1-D posteriors, offset stays analytically profiled),
+  priors PRE-REGISTERED and committed before the production run (RESULTS.md §6.5,
+  commit 621f957): Omega_m in (0.01, 1) open, q0 in (janus_q0_min(z_max), 0) open =
+  the validity domain. Fixed seeds (20260610/20260611) drive walker init AND sampler
+  state; bit-reproducibility tested incl. 50-SN real-data subsample (SPEC).
+- Review (3 agents, during the run): no finding invalidated the chains; emcee seed
+  mechanism verified by direct execution; stubs hardened; chains now persisted
+  before gates; seed-mechanism test added (different seed => different chain).
+- Pre-registered PREDICTION committed before reading any chain output (§6.6,
+  commit 4e10a47): Janus sigma rel. diff ~ -13.3% expected from q0=0 boundary
+  truncation alone. MEASURED: -15.3% (no 20% trigger), all companion predictions
+  confirmed (P(q0>-0.005): predicted 0.067, measured 0.0672).
+- Production run (exit 0): LCDM Omega_m = 0.3320 (+0.0180/-0.0184), tau 23.96;
+  Janus q0 = -0.0222 (+0.0123/-0.0138), tau 25.83; both pass n > 50 tau. Milne
+  posterior trivial (documented). Corner plots in figures/. Post-run diagnostics
+  (10tau-vs-3tau < 8e-5, half-chain splits) clean. RESULTS.md §7.2.
+- M9 prep (GO point 5): Brout et al. 2022 Omega_m citation verified verbatim by two
+  independent fetches; 2018-vs-here methodological differences table in §7.3.
+
+### Next (M9 — auto-mode, after M8 STOP report)
+- Delta-AIC, Delta-BIC, chi2/dof table; residuals vs z plot; same pipeline, frozen
+  M7/M8 numbers; side-by-side q0 comparison with §7.3 caveats, zero interpretation
+  beyond the numbers.
+- Consolidate frozen M7 constants into one src module (review nit).
+- M10: RESULTS.md final pass (limitations, what this does NOT prove). M11 blocked
+  on push GO (perso/org undecided).
 - M11 (CI badge) stays unchecked until CI actually runs green on GitHub — no push
   without explicit GO (perso/org undecided).
 
