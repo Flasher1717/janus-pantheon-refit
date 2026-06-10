@@ -1,8 +1,9 @@
 # Results — Independent refit of the Janus cosmological model on Pantheon+ SNe Ia
 
 > **Status: in progress.** This document is written incrementally as the project advances.
-> No fit has been run yet. Sections below marked *(pending)* will be filled once the
-> corresponding milestone is complete. The result — whatever it is — will be reported as-is.
+> Chi-square fits (M7) are complete; MCMC posteriors (M8) and model comparison (M9) are
+> pending. Sections below marked *(pending)* will be filled once the corresponding
+> milestone is complete. The result — whatever it is — will be reported as-is.
 
 ## 1. Sources and provenance
 
@@ -256,22 +257,173 @@ Notes, recorded for transparency:
   (regular at $q_0 = 0$). The review derived a fully cancellation-free equivalent
   bracket, $2z(1+s+z)/(1+s)^2$ with $s = \sqrt{1+2q_0z}$ (verified exactly equal to
   both published forms at 50-digit precision, no division by $q_0$, regular at
-  $q_0 = 0$); if adopted as the production evaluator at the fit stage, its derivation
-  will be recorded here.
+  $q_0 = 0$); adopted at M7 as the production evaluator `janus_mu` — derivation
+  recorded in §5.1 below.
 - **Domain bound exported.** The prior bound $q_0 > -1/(2 z_{max})$ (§3) is exposed as
   `janus_q0_min(z_max)` so the M7/M8 prior and the model validator share one source of
   truth; a test checks it sits exactly on the domain edge.
-- **Performance caveat (deferred to M7/M8):** `lcdm_mu` integrates with `scipy` `quad`
+- **Performance caveat (resolved at M7):** `lcdm_mu` integrates with `scipy` `quad`
   per redshift — accurate but too slow for ~1e5 MCMC likelihood calls on 1580 SNe
-  (measured 16.4 ms/call). The fit stage will use a vectorized fixed-order
+  (measured 16.4 ms/call). The fit stage uses a vectorized fixed-order
   Gauss–Legendre rule mapped onto each $[0, z_i]$ (review measurement: 12 nodes agree
-  with the quad oracle to 8.5e-14 mag at ~40× the speed), pinned against this oracle
-  at the same < 1e-6 mag gate.
+  with the quad oracle to 8.5e-14 mag at ~40× the speed), pinned against this oracle —
+  see §5.1 for the adopted node count and the measured errors on the full fit domain.
 
-## 6. Fit methodology *(pending — will document χ², marginalization, MCMC settings)*
+### 5.1 Production evaluators adopted at M7 *(2026-06-10)*
 
-## 7. Results *(pending)*
+**Janus — unified cancellation-free bracket (`janus_mu`).** With $s = \sqrt{1 + 2q_0 z}$,
+the eq. (29) bracket reduces exactly:
 
-## 8. Known limitations and what this does NOT prove *(pending — will include at minimum:
-SNe-only constraints are weak; no CMB/BAO/growth; no statement of validation or
-refutation of the Janus model as a whole)*
+- $2 q_0 z = s^2 - 1$, hence $1 + q_0 z + s = \frac{s^2 + 2s + 1}{2} = \frac{(1+s)^2}{2}$;
+- $1 - q_0 = \frac{2z + 1 - s^2}{2z}$;
+- therefore
+  $z + \frac{z^2 (1 - q_0)}{1 + q_0 z + s}
+  = z + \frac{z\,(2z + 1 - s^2)}{(1+s)^2}
+  = z\,\frac{(1+s)^2 + 2z + 1 - s^2}{(1+s)^2}
+  = \boxed{\frac{2z\,(1 + s + z)}{(1+s)^2}}$
+
+Every term is non-negative for $z > 0$ (no subtraction, no division by $q_0$), and the
+expression is regular at $q_0 \to 0^-$: $s \to 1$ gives $z + z^2/2$ (Milne) exactly.
+Permanent tests pin `janus_mu` to **both** published forms at < 1e-12 mag — to the
+Terrell form (29) over $q_0 \in [-0.21, -0.01]$ plus $\{-10^{-3}, -10^{-5}, -10^{-8}\}$,
+and to the Mattig form (26)/(28) over $q_0 \in [-0.21, -0.01]$ (above its measured
+cancellation floor, §5). Both published forms keep their own oracle tests.
+
+**ΛCDM — Gauss–Legendre node count (`lcdm_mu_fast`), deviation from plan documented.**
+The M7 GO authorized 12 nodes *conditional on* a permanent < 1e-12 mag pin against the
+quad oracle. Measured on $z \in [0.01, 2.3]$ (200 points) ×
+$\Omega_m \in \{0.2, 0.3, 0.5, 1.0\}$ × $H_0 \in \{67, 70, 73\}$:
+
+| Nodes | max $|\Delta\mu|$ vs quad oracle |
+|---|---|
+| 12 | 2.231e-12 mag — **fails the < 1e-12 condition** |
+| 16 | **7.105e-15 mag** (float64 floor) |
+
+The earlier 8.5e-14 figure for 12 nodes (§5 note above) was measured during the M5–M6
+review on a narrower $\Omega_m$ range; on the full fit domain (prior upper bound
+$\Omega_m = 1.0$, where the integrand is least polynomial-like) 12 nodes do not meet
+the GO's own condition. **16 nodes were therefore adopted** — a deviation from the
+plan's "12", forced by the plan's stricter accuracy condition. Permanent test:
+`test_lcdm_fast_pinned_to_quad_oracle` (< 1e-12 mag, 4 configurations); the quad
+oracle keeps its astropy validation (§5).
+
+## 6. Fit methodology *(M7, 2026-06-10 — chi2 stage; MCMC settings will be added at M8)*
+
+### 6.1 Chi-square with full covariance and analytic offset marginalization
+
+With $\Delta_i = m_{b,corr,i} - \mu_{model}(z_i; \theta)$ and $C$ the full STAT+SYS
+covariance restricted to the 1580-SN sample (§4):
+
+$$\chi^2(\theta) = A - \frac{B^2}{E}, \quad
+A = \Delta^T C^{-1} \Delta, \quad B = \Delta^T C^{-1} \mathbf{1}, \quad
+E = \mathbf{1}^T C^{-1} \mathbf{1}$$
+
+This is exactly the chi-square *profiled* over the additive offset (the degenerate
+combination of $M_B$ and $5\log_{10}(c/H_0)$ — the "$cst$" the 2018 paper itself fits),
+attained at offset $= B/E$; the standard form of Goliath et al. 2001 (A&A 380, 6,
+eq. 21) and Conley et al. 2011 (ApJS 192, 1, Appendix C). The full Bayesian
+flat-prior marginalization would add $+\ln(E/2\pi) = 9.322$ (measured,
+$E = 70266.44$), a model-independent constant on shared data/covariance: it shifts no
+minimum and no $\Delta\chi^2$ between models, and is omitted. All $C^{-1}$ products go
+through one cached Cholesky factorization (`scipy cho_factor/cho_solve`); the
+covariance is never explicitly inverted. The same `MarginalizedChi2` object (same
+data, same factorization) is shared by all three models. $H_0$ is fixed at
+70 km/s/Mpc and is fully degenerate with the profiled offset (test:
+$\chi^2$ invariant under $H_0 \in [60, 80]$ within $10^{-9}$ relative).
+
+Exactness checks (measured): explicit numerical minimization over the offset agrees
+with $A - B^2/E$ to 2.7e-8 absolute on the real 1580×1580 system
+($A \approx 2.6\times10^7$, i.e. ~9e-16 relative — float64 floor) and to machine
+precision on synthetic systems.
+
+### 6.2 Optimizer and uncertainties
+
+Bounded scalar minimization (`scipy minimize_scalar`, `xatol` = 1e-8):
+$\Omega_m \in [0.01, 1.0]$; Janus $q_0 \in (q_{0,min}(1 - 10^{-6}),\ q_{0,min}\cdot10^{-6})$
+with $q_{0,min} =$ `janus_q0_min(z_max)` $= -0.2211$ — the single exported source of
+truth for the domain/prior bound (§3, §5). Milne has no shape parameter. The quoted
+1σ uncertainties are local-curvature (Hessian) estimates
+$\sigma = \sqrt{2/\chi^{2\prime\prime}}$ (central second difference at the minimum) —
+placeholders until the M8 MCMC posteriors. Both minima were verified interior and
+parabolic (five-point scan).
+
+### 6.3 ΛCDM sanity gate: recalibrated with explicit GO, pre-registered
+
+- **The SPEC gate was a-priori.** SPEC.md (immutable, kept verbatim) expects the
+  best-fit ΛCDM chi2 in "~1400-1500 for ~1580 points". That band was the SPEC
+  author's prior estimate, written before any literature check of this exact
+  statistic.
+- **Measured value:** best-fit ΛCDM $\chi^2 = 1387.099$ — below the band. Per the M7
+  GO ("outside the band = pipeline bug until proven otherwise"), work STOPPED and a
+  five-lens audit ran before any other fit: (a) from-scratch covariance restriction —
+  bit-exact match to the pipeline matrix, text-file spot checks by raw line number;
+  (b) fully independent chi2 recomputation (`scipy quad` + `np.linalg.solve`, no
+  project likelihood/fitting code): 1387.098996, grid-scan minimum
+  $\Omega_m = 0.33164$, curvature $\sigma = 0.0181$; (c) marginalization formula
+  validated against Goliath 2001 / Conley 2011 (above); (d) adversarial bug hunt —
+  stale cache, symmetrization, redshift column, optimizer artifacts, covariance
+  scale, duplicate handling: all refuted by direct measurement (e.g. symmetrization
+  changes the restricted matrix by exactly 0: all 778 asymmetric raw entries lie in
+  rows removed by the cut); (e) literature search.
+- **Decisive external replication:** Keeley, Shafieloo & L'Huillier 2024 (Universe
+  10, 439; arXiv:2212.07917), analyzing the *identical* configuration — Pantheon+
+  full STAT+SYS covariance, $z > 0.01$, SH0ES calibrators excluded ($N = 1580$),
+  offset profiled — report best-fit flat-ΛCDM $\chi^2 = 1387.10$. Our 1387.099
+  replicates the published value to its quoted precision. No published source
+  reports a value in [1400, 1500] for this configuration.
+- **Recalibrated gate (Téo's explicit GO, 2026-06-10):**
+  $|\chi^2_{\Lambda CDM} - 1387.10| \le 1.0$ — an exact-replication anchor,
+  *tighter* than the superseded a-priori band, not looser. Implemented in
+  `janus_refit.fitting` (`LCDM_CHI2_REFERENCE`, `LCDM_CHI2_TOLERANCE`), enforced by
+  `tests/test_fitting.py` and `scripts/run_fits.py` (which still refuses to run
+  Janus/Milne if the gate fails).
+- **Pre-registration statement.** No Janus or Milne chi2 value was displayed,
+  recorded or inspected by anyone before this recalibration was decided and
+  implemented. (For completeness: a finiteness-only pytest case had *executed*
+  Janus/Milne fits in process memory without exposing any value; no number from
+  those fits existed anywhere a human or the assistant could read before the gate
+  was fixed.) The recalibration therefore could not have been influenced by the
+  comparative outcome.
+
+### 6.4 Execution order
+
+ΛCDM fit first; gate checked; Janus and Milne fits run only after the gate passed
+(`scripts/run_fits.py` enforces the order and the STOP).
+
+## 7. Results — chi2 stage *(M7, measured 2026-06-10 on this host)*
+
+Sample: 1580 SNe, $z_{HD} \in [0.01016, 2.26137]$, full STAT+SYS covariance, additive
+offset profiled analytically (§6.1). `n_params` counts the profiled offset.
+
+| Model | Shape parameter (curvature 1σ) | $\chi^2$ | dof | $\chi^2$/dof |
+|---|---|---|---|---|
+| Flat ΛCDM | $\Omega_m = 0.331631 \pm 0.018207$ | 1387.099 | 1578 | 0.8790 |
+| Janus | $q_0 = -0.021010 \pm 0.014767$ | 1434.719 | 1578 | 0.9092 |
+| Milne | (offset only) | 1436.665 | 1579 | 0.9099 |
+
+Arithmetic differences on the shared pipeline:
+$\chi^2_{Janus} - \chi^2_{\Lambda CDM} = +47.620$;
+$\chi^2_{Milne} - \chi^2_{\Lambda CDM} = +49.566$;
+$\chi^2_{Milne} - \chi^2_{Janus} = +1.946$ (Janus has one more fitted parameter than
+Milne). Model-comparison statistics (ΔAIC, ΔBIC), residual diagrams and MCMC
+posteriors are deferred to M8–M9. For later reference, the 2018 published Janus fit
+(different dataset and standardization: JLA, 740 SNe, fixed JLA nuisance parameters)
+was $q_0 = -0.087 \pm 0.015$ (§2, eq. 8); the comparison is deferred to M9–M10.
+
+## 8. Known limitations and what this does NOT prove *(seeded at M7; completed at M10)*
+
+- **The released Pantheon+ covariance likely overestimates uncertainties.** Keeley,
+  Shafieloo & L'Huillier 2024 (arXiv:2212.07917) find the same $\chi^2 = 1387.10$
+  "suspiciously small": none of their 10,000 mock realizations drawn from the
+  released covariance reach a $\chi^2$ that low (> 3.9σ), and they attribute it to
+  ~7% overestimated distance-modulus errors (the intrinsic-scatter term is tuned to
+  reduced $\chi^2 = 1$ *before* the systematic matrix is added). Consequences for
+  this project: (a) parameter uncertainties derived with this covariance are
+  conservative; (b) $\chi^2/\mathrm{dof} < 1$ is a property of the dataset's
+  covariance, not a merit of any model — absolute $\chi^2/\mathrm{dof}$ values must
+  not be read as goodness-of-fit evidence; only differences between models on the
+  same covariance are meaningful here.
+- SNe-only constraints are weak; no CMB/BAO/growth information enters this project.
+  *(Full discussion at M10.)*
+- Nothing here validates or refutes the Janus model as a whole: this is one
+  comparative fit on one dataset. *(Full discussion at M10.)*

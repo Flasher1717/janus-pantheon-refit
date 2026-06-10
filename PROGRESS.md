@@ -71,16 +71,45 @@
   pyright directives narrowed, test grids frozen.
 - Quality: ruff + format + pyright strict green; 43 tests pass.
 
-### Next (M7 — needs GO)
-- chi2 with full covariance (Cholesky solve, never explicit inverse) + analytic
-  offset marginalization (chi2_p = a - b^2/e), identical pipeline for all 3 models.
-- Fast LCDM path for fits: vectorized fixed-order Gauss-Legendre on [0, z_i]
-  (review measured 12 nodes = 8.5e-14 mag vs quad oracle, ~40x faster); pin vs quad
-  oracle at < 1e-6 mag. Consider the cancellation-free unified Janus bracket
-  2z(1+s+z)/(1+s)^2 as production evaluator (exactly equal to both forms; derivation
-  to record in RESULTS.md if adopted).
+## Session 2 — 2026-06-10
+
+### Done
+- Session interrupted by a host reboot mid-M7; state recovered from disk (ritual:
+  SPEC/PROGRESS/git log/pytest). Téo re-supplied the M7 GO verbatim (strict scope:
+  Cholesky-only chi2, analytic offset marginalization, production evaluators pinned
+  < 1e-12 with oracles kept, LCDM-first execution order with STOP on gate failure,
+  no tuning after seeing results, STOP at end of M7).
+- M7 likelihood: `MarginalizedChi2` (A - B²/E offset profiling, cached Cholesky,
+  never explicit inverse), validated against Goliath 2001 eq. 21 / Conley 2011
+  App. C; exactness vs explicit numerical offset profiling: 2.7e-8 absolute on the
+  real 1580×1580 system (~9e-16 relative).
+- M7 production evaluators: `janus_mu` unified bracket 2z(1+s+z)/(1+s)² (derivation
+  recorded in RESULTS.md §5.1) pinned < 1e-12 mag to BOTH published forms;
+  `lcdm_mu_fast` Gauss-Legendre — measured 12 nodes = 2.231e-12 mag (fails the GO's
+  own < 1e-12 condition on the full fit domain) → 16 nodes adopted (7.105e-15 mag);
+  deviation from the plan's "12" documented in RESULTS.md §5.1.
+- GATE EVENT (the SPEC sanity band): best-fit ΛCDM chi2 = 1387.099 < [1400, 1500] →
+  full STOP per M7 GO point 3. Five-lens audit (from-scratch covariance restriction:
+  bit-exact; independent quad+solve chi2: 1387.098996; formula audit; adversarial
+  hunt: all mechanisms refuted by measurement; literature search). Decisive:
+  Keeley, Shafieloo & L'Huillier 2024 (Universe 10, 439; arXiv:2212.07917) report
+  chi2 = 1387.10 for the IDENTICAL configuration — exact external replication.
+- Gate recalibrated with Téo's explicit GO (option 1): |chi2 − 1387.10| ≤ 1.0,
+  pre-registered before any Janus/Milne chi2 was seen (statement in RESULTS.md
+  §6.3); SPEC.md untouched; CLAUDE.md numeric gate updated; constants in
+  `janus_refit.fitting`.
+- M7 fits run in the mandated order (scripts/run_fits.py): ΛCDM Ω_m = 0.331631 ±
+  0.018207, chi2 = 1387.099 (gate PASS); Janus q0 = -0.021010 ± 0.014767, chi2 =
+  1434.719; Milne chi2 = 1436.665. Raw numbers in RESULTS.md §7; limitations seeded
+  in §8 (covariance ~7% overestimated per arXiv:2212.07917 → chi2/dof < 1 is a
+  dataset property, not a model merit).
+
+### Next (M8 — needs GO)
+- MCMC (emcee): fixed seeds, convergence via autocorrelation, identical
+  data/covariance/marginalization for all three models (same MarginalizedChi2).
 - emcee log_prob must return -inf outside priors BEFORE calling models (validation
-  raises by design); q0 prior bound = janus_q0_min(z_max).
+  raises by design); q0 prior bound = janus_q0_min(z_max); Omega_m prior [0.01, 1.0].
+- Corner plots; curvature sigmas in RESULTS.md §7 to be superseded by posteriors.
 - M11 (CI badge) stays unchecked until CI actually runs green on GitHub — no push
   without explicit GO (perso/org undecided).
 
