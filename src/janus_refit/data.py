@@ -13,9 +13,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from numpy.typing import NDArray
 
-FloatArray = NDArray[np.float64]
+from janus_refit._types import FloatArray
 
 PANTHEON_SN_COUNT = 1701
 DEFAULT_Z_MIN = 0.01

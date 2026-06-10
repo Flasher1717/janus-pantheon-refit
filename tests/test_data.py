@@ -3,9 +3,9 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from janus_refit._types import FloatArray
 from janus_refit.data import (
     PANTHEON_SN_COUNT,
-    FloatArray,
     SNSample,
     build_sample,
     load_sample,
