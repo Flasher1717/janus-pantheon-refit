@@ -124,13 +124,26 @@
 - M9 prep (GO point 5): Brout et al. 2022 Omega_m citation verified verbatim by two
   independent fetches; 2018-vs-here methodological differences table in §7.3.
 
-### Next (M9 — auto-mode, after M8 STOP report)
-- Delta-AIC, Delta-BIC, chi2/dof table; residuals vs z plot; same pipeline, frozen
-  M7/M8 numbers; side-by-side q0 comparison with §7.3 caveats, zero interpretation
-  beyond the numbers.
-- Consolidate frozen M7 constants into one src module (review nit).
-- M10: RESULTS.md final pass (limitations, what this does NOT prove). M11 blocked
-  on push GO (perso/org undecided).
+### Done (continued — M9 and M10, auto-mode)
+- M9: janus_refit.reference (frozen measured values, single source), comparison.py
+  (AIC/BIC), MarginalizedChi2.best_offset, scripts/run_comparison.py. Measured:
+  dAIC vs LCDM = +47.620 (Janus) / +47.566 (Milne); dBIC = +47.620 / +42.201;
+  Janus-vs-Milne dAIC +0.054, dBIC +5.419 (nested at q0=0, noted next to the
+  numbers). Residuals figure (frozen fits): Janus/Milne -LCDM at z_max = +0.4803 /
+  +0.4041 mag; < 0.0490 mag below z = 0.5. RESULTS.md §6.7 + §7.4.
+- M10: RESULTS.md §8 completed (8.1 dataset/covariance incl. standardization
+  inheritance with its direction stated, 8.2 method incl. prior dependence and
+  boundary truncation, 8.3 what this does NOT prove incl. the pile-up reading
+  guard). Three-lens honesty review (no-overclaim / numerical traceability /
+  internal consistency): traceability PASS — every load-bearing number reproduced
+  by independent recomputation; all should-fix findings applied (evaluative
+  adjectives removed, §3 forward promises closed with measured numbers, SPEC's
+  xfail order-of-magnitude q0 test added to tests/test_fitting.py).
+
+### Next (M11 — BLOCKED on Téo)
+- CI on GitHub: needs the perso-vs-org hosting decision and an explicit push GO
+  (CLAUDE.md: never push without GO). Workflow file already in the repo; M11 stays
+  unchecked until CI actually runs green on GitHub.
 - M11 (CI badge) stays unchecked until CI actually runs green on GitHub — no push
   without explicit GO (perso/org undecided).
 

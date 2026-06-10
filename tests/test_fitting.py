@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from helpers import DATA_DIR, requires_data
 
 from janus_refit._types import FloatArray
@@ -80,6 +81,17 @@ class TestRealPantheonFits:
         pipeline bug, not cosmology."""
         fit = fit_lcdm(self.chi2())
         assert abs(fit.chi2 - LCDM_CHI2_REFERENCE) <= LCDM_CHI2_TOLERANCE
+
+    @pytest.mark.xfail(
+        reason="order-of-magnitude check vs the published 2018 JLA fit (q0 = -0.087): "
+        "different dataset, standardization and error model (RESULTS.md section 7.3)",
+        strict=False,
+    )
+    def test_janus_q0_order_of_magnitude_vs_published_2018(self) -> None:
+        """SPEC requirement: reproduction of the order of magnitude of the published
+        2018 q0, xfail-marked because the dataset differs."""
+        fit = fit_janus(self.chi2())
+        assert -0.87 < fit.params["q0"] < -0.0087
 
     def test_janus_and_milne_fits_produce_finite_results(self) -> None:
         chi2 = self.chi2()

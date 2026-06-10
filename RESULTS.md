@@ -1,10 +1,9 @@
 # Results — Independent refit of the Janus cosmological model on Pantheon+ SNe Ia
 
-> **Status: in progress.** This document is written incrementally as the project advances.
-> Chi-square fits (M7) and MCMC posteriors (M8) are complete; model comparison (M9) and
-> the final write-up (M10) are pending. Sections below marked *(pending)* will be filled
-> once the corresponding milestone is complete. The result — whatever it is — will be
-> reported as-is.
+> **Status: analysis complete (M0–M10).** Chi-square fits (M7), MCMC posteriors (M8),
+> model comparison (M9) and the limitations review (M10) are done; remaining milestone:
+> CI on GitHub (M11, pending the repository-hosting decision). The result — whatever it
+> is — is reported as-is.
 
 ## 1. Sources and provenance
 
@@ -134,7 +133,7 @@ same figure) and cites the 2018 paper as its reference [4] for the SNe compariso
 papers share the same structure: dust-era exact solution with $k = -1$ and
 $a^2\ddot{a} = \text{negative constant}$, giving the one-parameter family $\mu(z\,|\,q_0)$.
 
-One nuance, recorded for honesty: the field-equation prefactor conventions differ —
+One nuance, recorded: the field-equation prefactor conventions differ —
 P1 eq. (13) writes $a^2\ddot{a} = -\frac{8\pi G}{3}E$ with $E$ in *mass* units
 ($E \equiv a^3\rho + \bar{a}^3\bar{\rho}$), while P2 eq. (96a) writes
 $a^2 \frac{d^2a}{dx^{0\,2}} = -\frac{4\pi G}{c^2}E$ with $E$ in *energy* units
@@ -172,21 +171,21 @@ Implementation decisions, with reasons:
   $5\log_{10}(c/H_0) - M$ is degenerate with the absolute magnitude and is
   **marginalized analytically**, exactly as the paper itself fits "$q_0$ and $cst$".
 - **Both algebraic forms (26)/(28) and (29) will be implemented and tested for
-  agreement** — a cheap, strong internal-consistency check of our extraction.
+  agreement** — an internal-consistency check of our extraction.
 - **Milne nesting:** at $q_0 \to 0$, eq. (29) reduces to
   $5\log_{10}[z + z^2/2] + cst$, which is exactly the empty-universe (Milne) Hubble
   relation. The Janus parametrization therefore *nests* Milne at $q_0 = 0$: the
   Janus-vs-Milne comparison directly measures whether $q_0 < 0$ is preferred by the
-  data. (P1's published $q_0 = -0.087 \pm 0.015$ is ~5.8σ from 0 on JLA — one thing
-  this refit will check on Pantheon+ is whether that displacement survives the full
-  STAT+SYS covariance.)
+  data. (P1's published $q_0 = -0.087 \pm 0.015$ is ~5.8σ from 0 on JLA; the
+  corresponding Pantheon+ numbers from this refit are recorded in §7.4.)
 - **Dataset difference, stated upfront:** P1 fit 740 JLA SNe with fixed JLA nuisance
   parameters ($M_B, \alpha, \beta$ from the ΛCDM best fit — a methodological choice we
   inherit *in spirit* but not in detail: Pantheon+ publishes `m_b_corr` already
   Tripp-standardized, so the only remaining nuisance is the additive offset, which we
   marginalize). Reproduction of the published $q_0$ is therefore an
-  *order-of-magnitude* check, not an exact one; the corresponding test will be marked
-  `xfail`-tolerant and the difference documented here.
+  *order-of-magnitude* check, not an exact one; the corresponding check is the
+  xfail-marked test in `tests/test_fitting.py`, and the difference is documented in
+  §7.3–§7.4.
 
 ## 4. Dataset *(verified 2026-06-09)*
 
@@ -224,7 +223,7 @@ equation from §2. Validation results (measured on this host, float64):
 | Milne nesting: $|\mu_J(q_0{=}-10^{-8}) - \mu_M|$ | < 1e-7 mag (analytic bound 3.9e-8, see below) | **3.83e-8 mag** |
 | Milne vs astropy empty universe (`LambdaCDM(Om0=0, Ode0=0)`) | < 1e-6 mag | **7.1e-15 mag** |
 
-Notes, recorded for transparency:
+Notes:
 
 - **Numerical stabilization of the Mattig form (28).** Evaluated verbatim in float64,
   the printed bracket $[q_0 z + (1-q_0)(1-\sqrt{1+2q_0 z})]/q_0^2$ suffers catastrophic
@@ -308,7 +307,7 @@ plan's "12", forced by the plan's stricter accuracy condition. Permanent test:
 `test_lcdm_fast_pinned_to_quad_oracle` (< 1e-12 mag, 4 configurations); the quad
 oracle keeps its astropy validation (§5).
 
-## 6. Fit methodology *(M7, 2026-06-10 — chi2 stage; MCMC settings will be added at M8)*
+## 6. Fit methodology *(M7–M9, 2026-06-10: chi2 stage §6.1–6.4, MCMC §6.5–6.6, comparison §6.7)*
 
 ### 6.1 Chi-square with full covariance and analytic offset marginalization
 
@@ -333,9 +332,10 @@ data, same factorization) is shared by all three models. $H_0$ is fixed at
 $\chi^2$ invariant under $H_0 \in [60, 80]$ within $10^{-9}$ relative).
 
 Exactness checks (measured): explicit numerical minimization over the offset agrees
-with $A - B^2/E$ to 2.7e-8 absolute on the real 1580×1580 system
-($A \approx 2.6\times10^7$, i.e. ~9e-16 relative — float64 floor) and to machine
-precision on synthetic systems.
+with $A - B^2/E$ to ~1e-8 absolute on the real 1580×1580 system
+($A \approx 2.6\times10^7$, i.e. ~1e-15 relative — the float64 floor; the exact
+figure depends on the scalar-minimizer tolerance) and to machine precision on
+synthetic systems.
 
 ### 6.2 Optimizer and uncertainties
 
@@ -360,13 +360,14 @@ parabolic (five-point scan).
   bit-exact match to the pipeline matrix, text-file spot checks by raw line number;
   (b) fully independent chi2 recomputation (`scipy quad` + `np.linalg.solve`, no
   project likelihood/fitting code): 1387.098996, grid-scan minimum
-  $\Omega_m = 0.33164$, curvature $\sigma = 0.0181$; (c) marginalization formula
+  $\Omega_m = 0.33164$, curvature $\sigma = 0.0181$ (grid-resolution-limited
+  session values, consistent with the frozen 0.331631 / 0.018207); (c) marginalization formula
   validated against Goliath 2001 / Conley 2011 (above); (d) adversarial bug hunt —
   stale cache, symmetrization, redshift column, optimizer artifacts, covariance
   scale, duplicate handling: all refuted by direct measurement (e.g. symmetrization
   changes the restricted matrix by exactly 0: all 778 asymmetric raw entries lie in
   rows removed by the cut); (e) literature search.
-- **Decisive external replication:** Keeley, Shafieloo & L'Huillier 2024 (Universe
+- **External replication:** Keeley, Shafieloo & L'Huillier 2024 (Universe
   10, 439; arXiv:2212.07917), analyzing the *identical* configuration — Pantheon+
   full STAT+SYS covariance, $z > 0.01$, SH0ES calibrators excluded ($N = 1580$),
   offset profiled — report best-fit flat-ΛCDM $\chi^2 = 1387.10$. Our 1387.099
@@ -495,11 +496,12 @@ Production chains: 32 walkers × 4000 steps per model, seeds 20260610 (ΛCDM) /
 20260611 (Janus). Both chains pass the pre-registered convergence gate —
 ΛCDM: $\tau = 23.96$, $4000 > 50\tau = 1198$; Janus: $\tau = 25.83$, $4000 > 1292$.
 Burn-in $\lceil 3\tau \rceil$ (72 / 78 steps), thinning (11 / 12) → 11,424 / 10,432
-retained samples, ESS ≈ 5,200 / 4,800. Monte Carlo errors at this ESS are
-~2–3×10⁻⁴ on medians and ~1.3–1.8×10⁻⁴ on stds, so posterior values are quoted to
-4 decimals. ($\tau \approx 24$–26 partly reflects the uniform-over-prior
-initialization transient — $\tau$ is estimated on the full chain, a conservative
-bias; the 10τ diagnostic below confirms the retained samples are transient-free.)
+retained samples, ESS ≈ 5,200 / 4,900 (post-burn steps × walkers / τ:
+5,247 / 4,859). Monte Carlo errors at this ESS are ~3×10⁻⁴ on medians and
+~1.3–1.8×10⁻⁴ on stds, so posterior values are quoted to 4 decimals.
+($\tau \approx 24$–26 partly reflects the uniform-over-prior initialization
+transient — $\tau$ is estimated on the full chain, a conservative bias; the 10τ
+diagnostic below is consistent with transient-free retained samples.)
 
 | Model | median (16/84%) | mean | std | frozen M7 curvature σ | σ rel. diff |
 |---|---|---|---|---|---|
@@ -507,13 +509,15 @@ bias; the 10τ diagnostic below confirms the retained samples are transient-free
 | Janus, $q_0$ | −0.0222 (+0.0123 / −0.0138) | −0.0231 | 0.0125 | 0.014767 | **−15.3%** |
 | Milne | *(no shape parameter — posterior is the single point $\chi^2 = 1436.665$ of §7.1; nothing to sample)* | | | | |
 
-Corner plots: `figures/corner_lcdm.png`, `figures/corner_janus.png`. Chains:
-`data/mcmc_chains.npz` (gitignored; bit-reproducible from the committed seeds).
+The σ rel. diff column is computed from the unrounded stds (0.018374, 0.012504),
+not from the 4-decimal display values. Corner plots: `figures/corner_lcdm.png`,
+`figures/corner_janus.png`. Chains: `data/mcmc_chains.npz` (gitignored;
+bit-reproducible from the committed seeds).
 
 **Cross-check against the pre-registered prediction (§6.6).** The Janus σ relative
 difference, −15.3%, lies between the truncated-Gaussian prediction (−13.3%) and the
-20% investigation threshold, which therefore did not fire — and every companion
-prediction is confirmed: mean −0.0231 (predicted −0.0233), median −0.0222
+20% investigation threshold, which therefore did not fire. The companion
+predictions compare as follows: mean −0.0231 (predicted −0.0233), median −0.0222
 (predicted −0.0224), $P(q_0 > -0.005) = 0.0672$ (predicted 0.067), asymmetry
 $q_{84}-q_{50} = +0.0123 < |q_{50}-q_{16}| = 0.0138$ (predicted). The ΛCDM
 difference is +0.9% — Gaussian regime, as expected for boundaries 17.7σ/36.7σ away.
@@ -553,7 +557,7 @@ frozen M7 $q_0 = -0.021010 \pm 0.014767$; raw difference 0.066 in $q_0$):
 |---|---|---|
 | Dataset | JLA, 740 SNe (Betoule et al. 2014) | Pantheon+, 1580 light curves (1466 distinct SNe) after $z_{HD} > 0.01$ + calibrator exclusion; $z$ up to 2.26 |
 | Distance estimator | $\mu = m_B^* - M_B + \alpha X_1 - \beta C$ (§2 eq. 9) with $M_B, \alpha, \beta$ **fixed** to the JLA ΛCDM best fit | `m_b_corr` as released (Tripp standardization and bias corrections applied by the Pantheon+ team); only the additive offset remains and is profiled analytically |
-| Uncertainties | not recorded in our §2 extraction (published fit quality: $\chi^2/dof = 657/738$); to be checked against the paper if M9 needs it | full STAT+SYS covariance (1580×1580), Cholesky solve |
+| Uncertainties | not recorded in our §2 extraction (published fit quality: $\chi^2/dof = 657/738$); M9 did not require it — §7.4 quotes only the published $q_0 \pm \sigma$ of §2 eq. 8 | full STAT+SYS covariance (1580×1580), Cholesky solve |
 | Offset / $H_0$ | "$cst$" fitted alongside $q_0$ | offset profiled analytically (identical at the minimum) |
 
 The two $q_0$ values come from different datasets, different standardizations and
@@ -571,9 +575,11 @@ for this project.
 | Milne | 1 | 1436.665 | 1579 | 0.9099 | 1438.665 | 1444.030 | +47.566 | +42.201 |
 
 ΔAIC/ΔBIC are quoted relative to flat ΛCDM (positive = larger than ΛCDM's). Janus
-vs Milne directly: ΔAIC = +0.054, ΔBIC = +5.419 (positive = Janus's is larger; its
-$\chi^2$ is lower by 1.946 and it carries one more fitted parameter, which the two
-criteria penalize differently).
+vs Milne directly: ΔAIC = +0.054, ΔBIC = +5.419 (positive = Janus's is larger).
+Milne is the $q_0 \to 0$ limit of the Janus form (§3), so
+$\chi^2_{Janus} \le \chi^2_{Milne}$ holds by construction for nested models; the
+1.946 difference is what the one extra parameter buys, and the two criteria price
+that parameter differently.
 
 Residuals: `figures/residuals.png` — data minus the frozen ΛCDM prediction, with
 the frozen Janus and Milne curves drawn relative to ΛCDM. Measured at
@@ -590,7 +596,14 @@ standardization and error model — not the same measurement repeated):
 | This refit, chi2 stage (M7, frozen, §7.1) | $-0.021010 \pm 0.014767$ (curvature) |
 | This refit, posterior (M8, §7.2) | $-0.0222\ (+0.0123 / -0.0138)$ (median, 16/84%) |
 
-## 8. Known limitations and what this does NOT prove *(seeded at M7; completed at M10)*
+The §3 check, closed with the measured numbers: on Pantheon+ with the full
+STAT+SYS covariance, the frozen M7 mode sits 1.42 σ_curv from $q_0 = 0$ (§6.6) and
+the posterior gives $P(q_0 > -0.005) = 0.0672$ (§7.2) — to be read with the §8.2
+prior-dependence and boundary-truncation caveats.
+
+## 8. Known limitations and what this does NOT prove *(M10)*
+
+### 8.1 Dataset and covariance
 
 - **The released Pantheon+ covariance likely overestimates uncertainties.** Keeley,
   Shafieloo & L'Huillier 2024 (arXiv:2212.07917) find the same $\chi^2 = 1387.10$
@@ -598,12 +611,68 @@ standardization and error model — not the same measurement repeated):
   released covariance reach a $\chi^2$ that low (> 3.9σ), and they attribute it to
   ~7% overestimated distance-modulus errors (the intrinsic-scatter term is tuned to
   reduced $\chi^2 = 1$ *before* the systematic matrix is added). Consequences for
-  this project: (a) parameter uncertainties derived with this covariance are
-  conservative; (b) $\chi^2/\mathrm{dof} < 1$ is a property of the dataset's
+  this project: (a) if their attribution is correct, parameter uncertainties
+  derived with this covariance are conservative; (b) $\chi^2/\mathrm{dof} < 1$ is a property of the dataset's
   covariance, not a merit of any model — absolute $\chi^2/\mathrm{dof}$ values must
   not be read as goodness-of-fit evidence; only differences between models on the
   same covariance are meaningful here.
-- SNe-only constraints are weak; no CMB/BAO/growth information enters this project.
-  *(Full discussion at M10.)*
-- Nothing here validates or refutes the Janus model as a whole: this is one
-  comparative fit on one dataset. *(Full discussion at M10.)*
+- **One dataset.** Every number in §7 is conditional on Pantheon+ (its photometry,
+  calibration, selection and covariance). No other SNe compilation, and no
+  CMB/BAO/growth information, enters this project.
+- **Standardization inheritance.** `m_b_corr` is Tripp-standardized with bias
+  corrections derived by the Pantheon+ team using FLRW-based simulations. A model
+  whose true expansion history differs from the reference cosmology used in that
+  process could in principle inherit a bias in the standardized magnitudes;
+  re-deriving the standardization per model is far out of scope. The 2018 paper
+  faces the analogous limitation (JLA nuisance parameters fixed at the JLA ΛCDM
+  best fit, §7.3) — neither analysis is free of it, and it is not symmetric
+  between models: the Pantheon+ bias corrections were derived with an FLRW
+  reference cosmology close to ΛCDM, so any inherited bias would by construction
+  be smallest for models closest to that reference — if this limitation matters,
+  it acts in ΛCDM's favor in the §7.4 comparison. Its size is not quantifiable
+  within this project's scope.
+
+### 8.2 Method
+
+- **SNe Ia alone are a weak cosmological test.** They constrain the shape of the
+  late-time distance–redshift relation through one band of $z$, with one additive
+  offset absorbing $M_B$ and $H_0$; nothing here measures $H_0$ (the
+  $H_0 = 70$ km/s/Mpc used for evaluation is a convention absorbed by the offset,
+  §6.1), and entire families of expansion histories remain degenerate at the level
+  of this data.
+- **The Janus prior boundary is part of the result's geometry.** The
+  parametrization requires $q_0 < 0$ by construction ($E < 0$); the posterior piles
+  up against the $q_0 = 0$ boundary (§7.2: largest sample $-8\times10^{-6}$,
+  $P(q_0 > -0.005) = 6.7\%$). The posterior summary statistics (std, quantiles) are
+  shaped by that truncation — predicted in advance and documented in §6.6/§7.2 —
+  and the Hessian σ of §7.1 ignores it.
+- **Uncertainty estimates and prior dependence.** M7 sigmas are local-curvature
+  placeholders; M8 posteriors are one-dimensional flat-prior results with Monte
+  Carlo errors ~2–3×10⁻⁴ (§7.2). Posterior summaries near the $q_0 = 0$ boundary
+  (median, quantiles, $P(q_0 > -0.005)$) are additionally conditional on the
+  flat-in-$q_0$ prior over the validity domain, whose lower bound is set by the
+  sample's $z_{max}$, not by the model; no prior-sensitivity scan was performed.
+  The ΛCDM posterior is in the Gaussian regime and essentially prior-independent.
+  ΔAIC/ΔBIC are penalized chi2 differences, not Bayesian evidence ratios; no
+  evidence integral was computed.
+
+### 8.3 What this does NOT prove
+
+- It does **not** validate or refute the Janus cosmological model as a whole. One
+  prediction was tested: the one-parameter magnitude–redshift relation of the 2018
+  paper, on one dataset. The framework's other claims (field equations, negative
+  masses, CMB/BAO/structure predictions) are untouched here.
+- It does **not** establish ΛCDM as "true": the comparison statements in §7.4 are
+  relative, between three parametrizations, conditional on this dataset, this
+  covariance and this implementation.
+- The posterior pile-up against $q_0 = 0$ (§7.2) neither demonstrates nor excludes
+  $q_0 < 0$: under the flat prior on the validity domain the posterior is the
+  truncated $\chi^2$ surface, and the $q_0 \to 0$ limit of the Janus form is
+  exactly Milne (§3). The only model-level statements supported here are the §7.4
+  differences.
+- It does **not** show that the 2018 fit was wrong, nor replicate it: the published
+  $q_0 = -0.087 \pm 0.015$ and our $q_0 = -0.0222\ (+0.0123/-0.0138)$ come from
+  different datasets, different standardizations and different error models
+  (§7.3); this project does not attribute the difference.
+- The absolute $\chi^2/\mathrm{dof}$ values must not be quoted as goodness-of-fit
+  evidence for any model (§8.1, first bullet).
