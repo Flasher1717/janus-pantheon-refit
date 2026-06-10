@@ -2,10 +2,10 @@
 
 Append-only checklist. Items get checked `[x]`, never deleted or reworded.
 
-- [ ] M0 — Repo scaffolding: SPEC.md, MILESTONES.md, PROGRESS.md, git init, .gitignore
-- [ ] M1 — Source papers acquired (2018, 2024, 2014 if available) and equations
+- [x] M0 — Repo scaffolding: SPEC.md, MILESTONES.md, PROGRESS.md, git init, .gitignore
+- [x] M1 — Source papers acquired (2018, 2024, 2014 if available) and equations
       extracted verbatim into RESULTS.md "Model equations as extracted" (with page numbers)
-- [ ] M2 — Pantheon+ DataRelease structure verified (exact file paths, URLs, column names)
+- [x] M2 — Pantheon+ DataRelease structure verified (exact file paths, URLs, column names)
 - [ ] M3 — Plan (5-8 steps) + extracted Janus mu(z) formula presented to Téo; GO received
 - [ ] M4 — Data pipeline: scripts/download_data.py (SHA256), parsing (m_b_corr, zHD),
       z > 0.01 cut, covariance load + Cholesky validation, .npz cache
