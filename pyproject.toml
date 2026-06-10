@@ -1,0 +1,63 @@
+[project]
+name = "janus-refit"
+version = "0.1.0"
+description = "Independent refit of the Janus cosmological model SNe Ia Hubble diagram on Pantheon+"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [{ name = "Téo Alletz", email = "teo.alletz@gmail.com" }]
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.14",
+    "astropy>=7.0",
+    "pandas>=2.2",
+    "emcee>=3.1",
+    "corner>=2.2",
+    "matplotlib>=3.9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "ruff>=0.8",
+    "pyright>=1.1.390",
+    "pandas-stubs>=2.2",
+]
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "N",        # pep8-naming
+    "UP",       # pyupgrade
+    "B",        # bugbear
+    "SIM",      # simplify
+    "RUF",      # ruff-specific
+    "PL",       # pylint
+    "NPY",      # numpy
+    "T20",      # no print (scripts are exempted below)
+]
+
+ignore = ["PLR2004"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["T20"]
+
+[tool.pyright]
+include = ["src", "tests", "scripts"]
+typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q -ra"
