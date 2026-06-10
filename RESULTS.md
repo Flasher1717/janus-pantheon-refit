@@ -210,10 +210,68 @@ Implementation decisions, with reasons:
   ($z_{HD} \in [0.01016, 2.26137]$), matching the cosmology sample size of the
   Pantheon+ analysis (Brout et al. 2022).
 
-## 5. Methodology *(pending — will document χ², marginalization, MCMC settings)*
+## 5. Model implementations and oracle validation *(milestones M5-M6, 2026-06-09)*
 
-## 6. Results *(pending)*
+All three models live in `src/janus_refit/models.py`; each function cites its source
+equation from §2. Validation results (measured on this host, float64):
 
-## 7. Known limitations and what this does NOT prove *(pending — will include at minimum:
+| Check | Requirement | Measured |
+|---|---|---|
+| ΛCDM $\mu(z)$ vs `astropy.cosmology.FlatLambdaCDM` (5 configs $\Omega_m \in [0.2, 1.0]$, $H_0 \in [67, 73]$, $z \in [0.01, 2.3]$) | < 1e-6 mag | **8.4e-13 mag** |
+| Janus eq. (26)/(28) vs eq. (29), grid $z \in [0.01, 2.3] \times q_0 \in [-0.21, -0.01]$ | rel. < 1e-12 | **3.9e-16** |
+| Milne nesting: $|\mu_J(q_0{=}-10^{-8}) - \mu_M|$ | < 1e-7 mag (analytic bound 3.9e-8, see below) | **3.83e-8 mag** |
+| Milne vs astropy empty universe (`LambdaCDM(Om0=0, Ode0=0)`) | < 1e-6 mag | **7.1e-15 mag** |
+
+Notes, recorded for transparency:
+
+- **Numerical stabilization of the Mattig form (28).** Evaluated verbatim in float64,
+  the printed bracket $[q_0 z + (1-q_0)(1-\sqrt{1+2q_0 z})]/q_0^2$ suffers catastrophic
+  cancellation at small $|q_0| z$: measured max relative error **6.0e-11** on the test
+  grid (worst at $q_0 = -0.01$, $z = 0.01$) — it cannot meet a 1e-12 cross-check on its
+  own. `janus_mu_mattig` therefore evaluates it through the exact conjugate identity
+  $1 - \sqrt{1+2q_0z} = -2q_0z/(1+\sqrt{1+2q_0z})$, derived from the (26)/(28)
+  expression alone (independence from form (29) preserved), giving
+  $z(\sqrt{1+2q_0z} - 1 + 2q_0)/(q_0(1+\sqrt{1+2q_0z}))$. This is exact algebra, not a
+  tolerance adjustment. A regression test additionally pins the verbatim printed form
+  to the stabilized one within its measured 1e-9 cancellation floor.
+- **Milne-nesting tolerance, justified.** Expanding the eq. (29) bracket around
+  $q_0 = 0$: $f(q_0) - f(0) = -q_0 z^2(1+z)/2 + O(q_0^2)$, hence
+  $|\Delta\mu| \approx (5/\ln 10)\,|q_0|\, z(1+z)/(2+z) \le 3.9\times10^{-8}$ mag at
+  $q_0 = -10^{-8}$, $z \le 2.3$. The test asserts $< 10^{-7}$ (2.5× margin); the
+  measured value (3.83e-8) matches the analytic bound. A second test checks the
+  convergence is first order in $q_0$ (ratio of deviations at $q_0 = -10^{-6}$ vs
+  $-10^{-8}$ within [80, 120]).
+- **Continuity near the domain edge.** $d\mu/d\ln z$ grows like $1/\sqrt{1+2q_0z}$
+  toward the validity boundary (≈ 11.6 mag per e-fold at $q_0 = -0.21$, $z = 2.3$), so
+  the continuity test bounds each grid step by the analytic derivative
+  $f'(z) = (\sqrt{1+2q_0z} - 1 + q_0)/(q_0\sqrt{1+2q_0z})$ rather than a fixed
+  threshold. Monotonicity (strictly increasing $\mu(z)$) holds on the whole grid for
+  $q_0 \in \{-0.21, -0.087, -0.01\}$, both forms.
+- **Residual cancellation in the Mattig form at $q_0 \to 0^-$ (measured, test-pinned).**
+  Even stabilized, the (26)/(28) numerator computes $\sqrt{1+\epsilon} - 1$, leaving an
+  error of order $\epsilon_{machine}/|q_0|$ in magnitude: measured
+  $|\mu_{28} - \mu_{29}| = 8.9\times10^{-9}$ mag at $q_0 = -10^{-8}$, growing as
+  $1/|q_0|$. A test pins this floor (bound $10^{-15}/|q_0|$ mag, ~10× margin). The
+  Milne-nesting tests and any small-$|q_0|$ evaluation therefore use the Terrell form
+  (regular at $q_0 = 0$). The review derived a fully cancellation-free equivalent
+  bracket, $2z(1+s+z)/(1+s)^2$ with $s = \sqrt{1+2q_0z}$ (verified exactly equal to
+  both published forms at 50-digit precision, no division by $q_0$, regular at
+  $q_0 = 0$); if adopted as the production evaluator at the fit stage, its derivation
+  will be recorded here.
+- **Domain bound exported.** The prior bound $q_0 > -1/(2 z_{max})$ (§3) is exposed as
+  `janus_q0_min(z_max)` so the M7/M8 prior and the model validator share one source of
+  truth; a test checks it sits exactly on the domain edge.
+- **Performance caveat (deferred to M7/M8):** `lcdm_mu` integrates with `scipy` `quad`
+  per redshift — accurate but too slow for ~1e5 MCMC likelihood calls on 1580 SNe
+  (measured 16.4 ms/call). The fit stage will use a vectorized fixed-order
+  Gauss–Legendre rule mapped onto each $[0, z_i]$ (review measurement: 12 nodes agree
+  with the quad oracle to 8.5e-14 mag at ~40× the speed), pinned against this oracle
+  at the same < 1e-6 mag gate.
+
+## 6. Fit methodology *(pending — will document χ², marginalization, MCMC settings)*
+
+## 7. Results *(pending)*
+
+## 8. Known limitations and what this does NOT prove *(pending — will include at minimum:
 SNe-only constraints are weak; no CMB/BAO/growth; no statement of validation or
 refutation of the Janus model as a whole)*

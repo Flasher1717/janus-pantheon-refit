@@ -48,11 +48,41 @@
   non-atomic/non-self-healing cache, silent NaN row drops, missing failure-mode tests.
 - Quality: ruff + format + pyright strict + pytest all green (17 tests, 3 on real data).
 
-### Next
-- Step 3 (M5/M6): models module — ΛCDM mu(z) vs astropy oracle (<1e-6 mag), Janus
-  mu(z) both forms (eq. 26/28 vs 29) + monotonicity/continuity + Milne nesting tests.
-- Then step 4: chi2 with full covariance (Cholesky solve) + analytic offset
-  marginalization (chi2_p = a - b^2/e), identical pipeline for all 3 models.
+### Done (continued — step 3, M5/M6, after Téo's GO with strict scope)
+- CLAUDE.md created (76 lines): session ritual, commands, quality gates, numeric
+  gates, honesty rules, git rules.
+- M5: `janus_refit.models.lcdm_mu` (quad, epsrel 1e-11) vs astropy FlatLambdaCDM:
+  max |dmu| = 8.4e-13 mag over 5 (Om, H0) configs, z in [0.01, 2.3] (gate: 1e-6).
+- M6: Janus implemented in BOTH published forms. Verbatim eq. (28) bracket has
+  catastrophic cancellation in float64 (measured 6.0e-11 rel — cannot meet 1e-12);
+  janus_mu_mattig uses the exact conjugate identity 1-s = -2q0z/(1+s) (derived from
+  the (26)/(28) form alone). Cross-test (26)/(28) vs (29): max rel diff 3.9e-16 on
+  z in [0.01,2.3] x q0 in [-0.21,-0.01] (gate: 1e-12). Milne nesting at q0=-1e-8:
+  3.83e-8 mag, matching the analytic bound (5/ln10)|q0| z(1+z)/(2+z) <= 3.9e-8;
+  first-order convergence checked. Continuity tested against the analytic derivative
+  bound (dmu/dlnz ~ 11.6 mag/e-fold at the domain edge q0=-0.21, z=2.3). Domain
+  guards (q0 < 0, 1+2q0z > 0, h0 > 0, 1-D non-empty finite z) + janus_q0_min(z_max)
+  exported as the single source of truth for the M7/M8 prior bound.
+- Two-agent review (formula fidelity + quality): fidelity PASS (independent 50-digit
+  re-derivation, zero formula deviation). Quality fixes applied in-scope: h0/shape
+  validation, mattig small-|q0| cancellation floor test-pinned (8.9e-9 mag at
+  q0=-1e-8, ~eps/|q0| growth — Terrell form used in that regime), FloatArray moved
+  to leaf module _types.py (models no longer imports pandas via data), oracles.py
+  pyright directives narrowed, test grids frozen.
+- Quality: ruff + format + pyright strict green; 43 tests pass.
+
+### Next (M7 — needs GO)
+- chi2 with full covariance (Cholesky solve, never explicit inverse) + analytic
+  offset marginalization (chi2_p = a - b^2/e), identical pipeline for all 3 models.
+- Fast LCDM path for fits: vectorized fixed-order Gauss-Legendre on [0, z_i]
+  (review measured 12 nodes = 8.5e-14 mag vs quad oracle, ~40x faster); pin vs quad
+  oracle at < 1e-6 mag. Consider the cancellation-free unified Janus bracket
+  2z(1+s+z)/(1+s)^2 as production evaluator (exactly equal to both forms; derivation
+  to record in RESULTS.md if adopted).
+- emcee log_prob must return -inf outside priors BEFORE calling models (validation
+  raises by design); q0 prior bound = janus_q0_min(z_max).
+- M11 (CI badge) stays unchecked until CI actually runs green on GitHub — no push
+  without explicit GO (perso/org undecided).
 
 ### Key technical insight for later sessions
 - Janus mu(z) nests Milne exactly at q0 = 0 (eq. 29 at q0=0 gives z + z²/2). The
