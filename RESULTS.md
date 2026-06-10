@@ -390,6 +390,43 @@ parabolic (five-point scan).
 ΛCDM fit first; gate checked; Janus and Milne fits run only after the gate passed
 (`scripts/run_fits.py` enforces the order and the STOP).
 
+### 6.5 MCMC settings *(M8 — pre-registered 2026-06-10, committed before the production run)*
+
+Everything in this subsection was fixed and committed **before** the production
+chains were run (verifiable from the git history of this section).
+
+- **Sampler:** `emcee` EnsembleSampler (stretch move, default scale), 32 walkers,
+  4000 steps per model, one-dimensional posteriors:
+  $\log L(\theta) = -\chi^2_{marg}(\theta)/2$ (§6.1) under flat priors. The additive
+  offset stays profiled analytically — the identical likelihood object is shared by
+  all models.
+- **Pre-registered priors (flat, open intervals):**
+  - flat ΛCDM: $\Omega_m \in (0.01,\ 1.0)$;
+  - Janus: $q_0 \in (q_{0,min}(z_{max}),\ 0) = (-0.221105,\ 0)$ — both bounds are
+    the model's validity domain ($q_0 < 0$ from $E < 0$; $1 + 2 q_0 z > 0$), not
+    tuning choices. If posterior mass piles up against the $q_0 = 0$ boundary, that
+    is itself a result and will be reported as such;
+  - Milne: no shape parameter — the posterior is the single point
+    $\chi^2 = 1436.665$ (M7, frozen). Documented as trivial; nothing to sample.
+- **log-prob hygiene:** $-\infty$ is returned strictly outside the open prior
+  *before* the model is evaluated (model validators raise outside their domain by
+  design).
+- **Seeds (fixed):** ΛCDM 20260610, Janus 20260611. Both the walker initialization
+  (uniform over the prior, inset by a relative $10^{-9}$ so no walker starts exactly
+  on a boundary — an initialization detail, not a prior change) and the sampler's
+  internal random state derive from the seed; chains are bit-reproducible (tested,
+  including on a fixed 50-SN subsample of the real data per the SPEC determinism
+  requirement).
+- **Pre-registered convergence criterion:** $n_{steps} > 50\,\tau$ with $\tau$ the
+  integrated autocorrelation time (Sokal estimator, emcee implementation). Failure
+  ⇒ the production script STOPs and the failure is reported; no post-hoc loosening.
+- **Burn-in / thinning (fixed convention, emcee documentation):**
+  burn-in $= \lceil 3\tau \rceil$, thinning $= \max(1, \lfloor \tau/2 \rfloor)$.
+- **Cross-validation gate (M8 GO point 3):** posterior std vs the frozen M7
+  curvature $\sigma$ — relative difference reported; an absolute relative difference
+  above 20% triggers investigation before any contour is published.
+- **M7 numbers are frozen** (M8 GO point 4): no re-fit, no re-tuning of §7.
+
 ## 7. Results — chi2 stage *(M7, measured 2026-06-10 on this host)*
 
 Sample: 1580 SNe, $z_{HD} \in [0.01016, 2.26137]$, full STAT+SYS covariance, additive
