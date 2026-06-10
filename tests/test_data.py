@@ -2,6 +2,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from helpers import DATA_DIR, requires_data
 
 from janus_refit._types import FloatArray
 from janus_refit.data import (
@@ -12,14 +13,6 @@ from janus_refit.data import (
     read_covariance,
     read_table,
     validate_covariance,
-)
-
-DATA_DIR = Path(__file__).resolve().parents[1] / "data"
-
-requires_data = pytest.mark.skipif(
-    not (DATA_DIR / "Pantheon+SH0ES.dat").exists()
-    or not (DATA_DIR / "Pantheon+SH0ES_STAT+SYS.cov").exists(),
-    reason="Pantheon+ files not downloaded (run scripts/download_data.py)",
 )
 
 DAT_HEADER = (

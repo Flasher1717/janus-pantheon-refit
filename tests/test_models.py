@@ -4,10 +4,12 @@ from oracles import astropy_empty_universe_mu, astropy_flat_lcdm_mu
 
 from janus_refit._types import FloatArray
 from janus_refit.models import (
+    janus_mu,
     janus_mu_mattig,
     janus_mu_terrell,
     janus_q0_min,
     lcdm_mu,
+    lcdm_mu_fast,
     milne_mu,
 )
 
@@ -100,6 +102,47 @@ class TestMilneNesting:
         reference = astropy_empty_universe_mu(Z_GRID, H0_REF)
         ours = milne_mu(Z_GRID, H0_REF)
         assert float(np.max(np.abs(ours - reference))) < 1e-6
+
+
+class TestProductionEvaluators:
+    """M7 gate: production evaluators pinned to the reference implementations at
+    < 1e-12 mag; the references (quad oracle, both published Janus forms) keep
+    their own oracle tests above.
+    """
+
+    @pytest.mark.parametrize(
+        ("omega_m", "h0"),
+        [(0.2, 67.0), (0.3, 70.0), (0.5, 73.0), (1.0, 70.0)],
+    )
+    def test_lcdm_fast_pinned_to_quad_oracle(self, omega_m: float, h0: float) -> None:
+        fast = lcdm_mu_fast(Z_GRID, omega_m, h0)
+        oracle = lcdm_mu(Z_GRID, omega_m, h0)
+        assert float(np.max(np.abs(fast - oracle))) < 1e-12
+
+    def test_janus_unified_pinned_to_terrell(self) -> None:
+        q0_values = np.concatenate(
+            [np.linspace(-0.21, -0.01, 101), np.array([-1e-3, -1e-5, -1e-8])]
+        )
+        worst = 0.0
+        for q0 in q0_values:
+            unified = janus_mu(Z_GRID, float(q0), H0_REF)
+            terrell = janus_mu_terrell(Z_GRID, float(q0), H0_REF)
+            worst = max(worst, float(np.max(np.abs(unified - terrell))))
+        assert worst < 1e-12
+
+    def test_janus_unified_pinned_to_mattig(self) -> None:
+        """Restricted to q0 in [-0.21, -0.01], where the Mattig form is below its
+        cancellation floor (see TestJanusForms)."""
+        worst = 0.0
+        for q0 in np.linspace(-0.21, -0.01, 101):
+            unified = janus_mu(Z_GRID, float(q0), H0_REF)
+            mattig = janus_mu_mattig(Z_GRID, float(q0), H0_REF)
+            worst = max(worst, float(np.max(np.abs(unified - mattig))))
+        assert worst < 1e-12
+
+    def test_janus_unified_regular_at_milne_limit(self) -> None:
+        delta = janus_mu(Z_GRID, -1e-12, H0_REF) - milne_mu(Z_GRID, H0_REF)
+        assert float(np.max(np.abs(delta))) < 1e-10
 
 
 class TestJanusDomain:

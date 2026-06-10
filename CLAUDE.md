@@ -45,8 +45,12 @@ python -m uv run python scripts/download_data.py   # ONLY network step, one-time
   z ∈ [0.01, 2.3] × q0 ∈ [-0.21, -0.01].
 - Janus validity domain: q0 < 0 and 1 + 2·q0·z > 0 — out-of-domain input raises.
 - Covariance: symmetric within 1e-6 relative, positive definite (Cholesky), finite.
-- ΛCDM best-fit chi2 sanity on Pantheon+: ~1400-1500 for 1580 SNe. Outside that
-  range, the conclusion is "pipeline bug", never "interesting cosmology".
+- ΛCDM best-fit chi2 on Pantheon+ (1580 SNe, full STAT+SYS, offset profiled):
+  |chi2 − 1387.10| ≤ 1.0, anchored to the exact published replication (Keeley,
+  Shafieloo & L'Huillier 2024, arXiv:2212.07917). Recalibrated from the SPEC's
+  a-priori ~1400-1500 with Téo's GO (2026-06-10), pre-registered before any
+  Janus/Milne chi2 was seen — see RESULTS.md §6. Outside the gate, the conclusion
+  is "pipeline bug", never "interesting cosmology".
 
 ## Honesty rules
 
