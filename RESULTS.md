@@ -427,6 +427,34 @@ chains were run (verifiable from the git history of this section).
   above 20% triggers investigation before any contour is published.
 - **M7 numbers are frozen** (M8 GO point 4): no re-fit, no re-tuning of §7.
 
+### 6.6 Pre-run prediction for the σ cross-check *(recorded and committed before reading any chain output)*
+
+An independent statistical review ran while the production chains were executing;
+its a-priori prediction for the GO point-3 cross-check is recorded here, before any
+chain output was read, so a fired trigger is interpreted against a prediction
+rather than rationalized post-hoc:
+
+- The Janus posterior is the χ² surface restricted to $q_0 < 0$; the frozen M7 mode
+  ($-0.021010$) sits $1.423\,\sigma_{curv}$ from the $q_0 = 0$ domain boundary. A
+  Gaussian of width $\sigma = 0.014767$ truncated above at $1.423\sigma$ has
+  std $= 0.867\,\sigma = 0.01280$ — a predicted **−13.3% relative difference** vs
+  the Hessian σ from boundary truncation alone, not from any pipeline defect.
+  Truncated-Gaussian companion predictions: mean ≈ $-0.023331$, median ≈
+  $-0.022445$, $P(q_0 > -0.005) \approx 0.067$, and $q_{84}-q_{50} < q_{50}-q_{16}$
+  (visible asymmetry). Real-likelihood skew can push the difference past −20%, in
+  which case the pre-registered investigation trigger fires for the reason
+  predicted here in advance.
+- If the trigger fires for **flat ΛCDM** instead, no such explanation applies (its
+  prior bounds sit 17.7σ and 36.7σ from the mode; M7 verified the minimum interior
+  and parabolic) — that would indicate a genuine problem requiring a real
+  investigation.
+- Pre-specified post-run diagnostics: recompute the 16/50/84 quantiles and std with
+  burn-in $10\tau$ instead of $3\tau$ (agreement expected within the Monte Carlo
+  error); compare first-half vs second-half post-burn quantiles. At the expected
+  effective sample size (~10⁴), Monte Carlo errors are ~1–2×10⁻⁴ on mean, median
+  and std: posterior numbers will be quoted at 4 decimals with the MC error stated,
+  not at the raw print precision.
+
 ## 7. Results — chi2 stage *(M7, measured 2026-06-10 on this host)*
 
 Sample: 1580 SNe, $z_{HD} \in [0.01016, 2.26137]$, full STAT+SYS covariance, additive
