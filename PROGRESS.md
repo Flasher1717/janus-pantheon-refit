@@ -140,10 +140,29 @@
   adjectives removed, §3 forward promises closed with measured numbers, SPEC's
   xfail order-of-magnitude q0 test added to tests/test_fitting.py).
 
-### Next (M11 — BLOCKED on Téo)
-- CI on GitHub: needs the perso-vs-org hosting decision and an explicit push GO
-  (CLAUDE.md: never push without GO). Workflow file already in the repo; M11 stays
-  unchecked until CI actually runs green on GitHub.
+### Done (continued — M11, publication, after Téo's GO with strict scope)
+- Pre-push verification: repo-local identity confirmed on every commit (author AND
+  committer = Téo Alletz / teo.alletz@gmail.com, zero Kodia identity in history);
+  uv.lock consistent with pyproject (CI uses --frozen); gh CLI switched from the
+  active Kodiaquebec account to the personal Flasher1717 account per the GO.
+- README publication pass (only file touched): CI badge + direct RESULTS.md link at
+  the top, Status updated, Layout corrected to actual contents (planned notebooks/
+  never existed; scripts/ + figures/ listed instead).
+- Published: github.com/Flasher1717/janus-pantheon-refit (public, one-line
+  description, topics: cosmology, supernovae, pantheon-plus, reproduction-study,
+  model-comparison). First CI run GREEN on the full matrix (ubuntu/windows x
+  3.12/3.14, run 27308754465).
+- Tag v1.0.0 + GitHub Release (factual notes: dataset, the three chi2, q0 measured
+  vs published 2018, link to RESULTS.md at the tag).
+- No result, RESULTS.md section 5-7 or test was modified at publication time.
+
+## Project closed — 2026-06-10
+
+All milestones M0-M11 complete. Published at
+github.com/Flasher1717/janus-pantheon-refit (v1.0.0). The repository is the record:
+SPEC.md (verbatim spec), RESULTS.md (equations, methodology, results, limitations),
+MILESTONES.md (all checked), this file (session history). Out of scope forever per
+SPEC: CMB/BAO/N-body, SH0ES calibration, any "validated/refuted" conclusion.
 - M11 (CI badge) stays unchecked until CI actually runs green on GitHub — no push
   without explicit GO (perso/org undecided).
 

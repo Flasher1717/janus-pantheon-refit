@@ -17,4 +17,4 @@ Append-only checklist. Items get checked `[x]`, never deleted or reworded.
 - [x] M9 — Model comparison: chi2/dof, Delta-AIC, Delta-BIC, residuals vs z
 - [x] M10 — RESULTS.md complete and honest (methodology, tables, known limits,
       what the result does NOT prove)
-- [ ] M11 — CI GitHub Actions: ruff + pyright + pytest on push
+- [x] M11 — CI GitHub Actions: ruff + pyright + pytest on push
