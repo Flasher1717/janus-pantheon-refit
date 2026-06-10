@@ -456,6 +456,19 @@ rather than rationalized post-hoc:
   and std: posterior numbers will be quoted at 4 decimals with the MC error stated,
   not at the raw print precision.
 
+### 6.7 Model-comparison statistics *(M9)*
+
+$AIC = \chi^2 + 2k$ (Akaike 1974) and $BIC = \chi^2 + k \ln n$ (Schwarz 1978), with
+$k$ counting the analytically profiled offset ($k = 2$ for flat ΛCDM and Janus,
+$k = 1$ for Milne) and $n = 1580$, applied to the frozen M7 chi-squares (§7.1). The
+frozen constants live in `janus_refit.reference`, the single source for scripts and
+tests. Lower is better; only differences between models fitted to the same data and
+covariance are meaningful, and the model-independent marginalization constant
+(§6.1) cancels in every difference. Residual figure: data minus the frozen ΛCDM
+best-fit prediction (including its profiled offset), with the frozen Janus and
+Milne best-fit curves drawn relative to ΛCDM; plotted error bars are the covariance
+diagonal, illustrative only (all fits use the full covariance).
+
 ## 7. Results
 
 ### 7.1 Frozen chi2 stage *(M7, measured 2026-06-10 on this host)*
@@ -544,10 +557,38 @@ frozen M7 $q_0 = -0.021010 \pm 0.014767$; raw difference 0.066 in $q_0$):
 | Offset / $H_0$ | "$cst$" fitted alongside $q_0$ | offset profiled analytically (identical at the minimum) |
 
 The two $q_0$ values come from different datasets, different standardizations and
-different error models; M9 will report them side by side with these caveats and
-will not treat them as the same measurement repeated. Attributing the difference
+different error models; §7.4 reports them side by side with these caveats and
+does not treat them as the same measurement repeated. Attributing the difference
 to data vs method would require a controlled refit on JLA, which is out of scope
 for this project.
+
+### 7.4 Model comparison *(M9, computed 2026-06-10 from the frozen M7 chi-squares; method §6.7)*
+
+| Model | k | $\chi^2$ | dof | $\chi^2$/dof | AIC | BIC | ΔAIC | ΔBIC |
+|---|---|---|---|---|---|---|---|---|
+| Flat ΛCDM | 2 | 1387.099 | 1578 | 0.8790 | 1391.099 | 1401.829 | 0 | 0 |
+| Janus | 2 | 1434.719 | 1578 | 0.9092 | 1438.719 | 1449.449 | +47.620 | +47.620 |
+| Milne | 1 | 1436.665 | 1579 | 0.9099 | 1438.665 | 1444.030 | +47.566 | +42.201 |
+
+ΔAIC/ΔBIC are quoted relative to flat ΛCDM (positive = larger than ΛCDM's). Janus
+vs Milne directly: ΔAIC = +0.054, ΔBIC = +5.419 (positive = Janus's is larger; its
+$\chi^2$ is lower by 1.946 and it carries one more fitted parameter, which the two
+criteria penalize differently).
+
+Residuals: `figures/residuals.png` — data minus the frozen ΛCDM prediction, with
+the frozen Janus and Milne curves drawn relative to ΛCDM. Measured at
+$z_{max} = 2.26137$: Janus − ΛCDM = +0.4803 mag, Milne − ΛCDM = +0.4041 mag; below
+$z = 0.5$ the maximum separations from ΛCDM are 0.0433 mag (Janus) and 0.0490 mag
+(Milne).
+
+Side-by-side $q_0$ record, with the §7.3 caveats (different dataset,
+standardization and error model — not the same measurement repeated):
+
+| Source | $q_0$ |
+|---|---|
+| D'Agostini & Petit 2018, JLA 740 SNe (§2 eq. 8) | $-0.087 \pm 0.015$ |
+| This refit, chi2 stage (M7, frozen, §7.1) | $-0.021010 \pm 0.014767$ (curvature) |
+| This refit, posterior (M8, §7.2) | $-0.0222\ (+0.0123 / -0.0138)$ (median, 16/84%) |
 
 ## 8. Known limitations and what this does NOT prove *(seeded at M7; completed at M10)*
 

@@ -18,17 +18,21 @@ from corner import corner
 from janus_refit.data import load_sample
 from janus_refit.likelihood import MarginalizedChi2
 from janus_refit.mcmc import CONVERGENCE_FACTOR, MCMCResult, sample_janus, sample_lcdm
+from janus_refit.reference import (
+    M7_JANUS_Q0,
+    M7_JANUS_SIGMA,
+    M7_LCDM_OMEGA_M,
+    M7_LCDM_SIGMA,
+    M7_MILNE_CHI2,
+)
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 FIGURES_DIR = Path(__file__).resolve().parents[1] / "figures"
 
 M7_FROZEN = {
-    "FlatLCDM": (0.331631, 0.018207),
-    "Janus": (-0.021010, 0.014767),
+    "FlatLCDM": (M7_LCDM_OMEGA_M, M7_LCDM_SIGMA),
+    "Janus": (M7_JANUS_Q0, M7_JANUS_SIGMA),
 }
-"""(best fit, curvature sigma) measured at M7 — frozen, RESULTS.md section 7."""
-
-MILNE_CHI2_M7 = 1436.665
 SIGMA_INVESTIGATION_THRESHOLD = 0.20
 
 LABELS = {"omega_m": r"$\Omega_m$", "q0": r"$q_0$"}
@@ -92,7 +96,7 @@ def main() -> int:
     )
     print(
         f"Milne     (no shape parameter): posterior is the single point"
-        f" chi2 = {MILNE_CHI2_M7} (M7, offset profiled analytically) -- nothing to sample"
+        f" chi2 = {M7_MILNE_CHI2} (M7, offset profiled analytically) -- nothing to sample"
     )
 
     np.savez(

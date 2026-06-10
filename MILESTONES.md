@@ -14,7 +14,7 @@ Append-only checklist. Items get checked `[x]`, never deleted or reworded.
 - [x] M7 — chi2 fits (scipy) for ΛCDM, Janus, Milne with analytic M marginalization;
       ΛCDM sanity check vs published Pantheon+ chi2
 - [x] M8 — MCMC (emcee, fixed seeds, autocorrelation convergence) + corner plots
-- [ ] M9 — Model comparison: chi2/dof, Delta-AIC, Delta-BIC, residuals vs z
+- [x] M9 — Model comparison: chi2/dof, Delta-AIC, Delta-BIC, residuals vs z
 - [ ] M10 — RESULTS.md complete and honest (methodology, tables, known limits,
       what the result does NOT prove)
 - [ ] M11 — CI GitHub Actions: ruff + pyright + pytest on push

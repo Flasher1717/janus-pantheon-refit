@@ -57,3 +57,12 @@ class MarginalizedChi2:
         a = float(delta @ cho_solve(self._cho, delta))
         b = float(delta @ self._cinv_ones)
         return a - b * b / self._e
+
+    def best_offset(self, mu_model: FloatArray) -> float:
+        """The profiled additive offset B/E at which the chi-square minimum over
+        the offset is attained (Goliath et al. 2001, eq. 21)."""
+        if mu_model.shape != self.m_obs.shape:
+            msg = f"mu_model shape {mu_model.shape} != data shape {self.m_obs.shape}"
+            raise ValueError(msg)
+        delta = self.m_obs - mu_model
+        return float(delta @ self._cinv_ones) / self._e

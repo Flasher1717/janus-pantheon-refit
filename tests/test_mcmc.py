@@ -16,12 +16,10 @@ from janus_refit.mcmc import (
     sample_lcdm,
 )
 from janus_refit.models import janus_mu, janus_q0_min
+from janus_refit.reference import M7_LCDM_OMEGA_M
 
 Q0_TRUTH = -0.1
 H0_TRUTH = 70.0
-
-M7_FROZEN_LCDM_OMEGA_M = 0.331631
-"""Frozen M7 best fit (RESULTS.md section 7) — the MCMC must not move it."""
 
 
 def synthetic_chi2(n: int = 50, sigma: float = 0.1, seed: int = 7) -> MarginalizedChi2:
@@ -138,4 +136,4 @@ class TestRealPantheonMCMC:
             n_walkers=16,
             n_steps=500,
         )
-        assert abs(result.quantile(0.5) - M7_FROZEN_LCDM_OMEGA_M) < 3.0 * result.std
+        assert abs(result.quantile(0.5) - M7_LCDM_OMEGA_M) < 3.0 * result.std

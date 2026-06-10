@@ -42,6 +42,22 @@ def test_equals_numerically_profiled_offset() -> None:
     assert abs(chi2(mu) - float(profiled.fun)) < 1e-6
 
 
+def test_best_offset_attains_the_profiled_minimum() -> None:
+    chi2, cov = make_synthetic(seed=6)
+    mu = 24.0 + 5.0 * np.log10(chi2.z)
+    offset = chi2.best_offset(mu)
+    delta = chi2.m_obs - mu
+    cinv = np.linalg.inv(cov)
+
+    def chi2_at_offset(s: float) -> float:
+        shifted = delta - s
+        return float(shifted @ cinv @ shifted)
+
+    assert abs(chi2_at_offset(offset) - chi2(mu)) < 1e-9 * chi2(mu)
+    assert chi2_at_offset(offset + 0.01) > chi2_at_offset(offset)
+    assert chi2_at_offset(offset - 0.01) > chi2_at_offset(offset)
+
+
 def test_invariant_under_additive_offset() -> None:
     chi2, _ = make_synthetic(seed=3)
     mu = 24.0 + 5.0 * np.log10(chi2.z)
