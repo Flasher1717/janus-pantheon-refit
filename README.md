@@ -1,5 +1,9 @@
 # janus-refit
 
+[![ci](https://github.com/Flasher1717/janus-pantheon-refit/actions/workflows/ci.yml/badge.svg)](https://github.com/Flasher1717/janus-pantheon-refit/actions/workflows/ci.yml)
+
+**→ Full methodology and results: [RESULTS.md](RESULTS.md)**
+
 An independent, open-source refit of the **Janus cosmological model** supernovae Ia
 Hubble diagram (D'Agostini & Petit 2018) on the modern **Pantheon+** compilation
 (1701 light curves) with the full STAT+SYS covariance — compared head-to-head, with the
@@ -13,8 +17,9 @@ is published as-is. See [RESULTS.md](RESULTS.md) for the extracted model equatio
 
 ## Status
 
-Work in progress. Current state is tracked in [MILESTONES.md](MILESTONES.md) and
-[PROGRESS.md](PROGRESS.md).
+Analysis complete (milestones M0–M10): chi-square fits, MCMC posteriors and model
+comparison are done and reported in [RESULTS.md](RESULTS.md). Milestone history in
+[MILESTONES.md](MILESTONES.md) and [PROGRESS.md](PROGRESS.md).
 
 ## Quickstart
 
@@ -31,10 +36,12 @@ download runs offline.
 
 ## Layout
 
-- `src/janus_refit/` — typed library (pyright strict): data pipeline, models, likelihood
-- `scripts/download_data.py` — the only network step
+- `src/janus_refit/` — typed library (pyright strict): data pipeline, models,
+  likelihood, fitting, MCMC, comparison, frozen reference values
+- `scripts/` — `download_data.py` (the only network step), then `run_fits.py`,
+  `run_mcmc.py`, `run_comparison.py` (offline, in milestone order)
 - `tests/` — pytest suite; data-dependent tests skip when `data/` is absent
-- `notebooks/` — analysis notebooks (data, ΛCDM, Janus, comparison)
+- `figures/` — corner plots and Hubble-diagram residuals (committed outputs)
 - `RESULTS.md` — equations as extracted from the source papers, methodology, results
 
 ## Transparency
