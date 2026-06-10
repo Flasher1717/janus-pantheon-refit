@@ -29,13 +29,30 @@
   literal '+' return HTTP 200. README warns: cosmology fits MUST use the full
   covariance, not the _DIAG columns.
 
-### In progress
-- M3: plan presented to Téo at end of session 1 — **waiting for GO before any fit code**.
+### Done (continued — after Téo's GO)
+- M3: GO received from Téo for plan steps 1-2.
+- Scaffolding: uv 0.11.19 installed via pip --user (invoke as `python -m uv`),
+  pyproject (deps + ruff + pyright strict + pytest), src/janus_refit (typed, py.typed),
+  README (EN, AI-assisted mention), MIT LICENSE, CI matrix (ubuntu/windows × 3.12/3.14).
+- M4: data pipeline. `scripts/download_data.py` (stdlib urllib, 60 s timeout, SHA256
+  pinned: .dat 1cb0fc37…, .cov abf806d9…, idempotent, atomic .tmp+replace).
+  `janus_refit.data`: parse (zHD, m_b_corr, IS_CALIBRATOR), cut z > 0.01 AND
+  calibrator exclusion → 1580 SNe (z: 0.01016-2.26137), covariance validation (square/finite/symmetric
+  within 1e-6 rel/Cholesky PD) returning the symmetrized matrix, immutable SNSample
+  (read-only arrays, shape check), self-healing atomic .npz cache keyed on
+  v{schema}:sha256(dat):sha256(cov).
+- Found: released STAT+SYS matrix is not bit-exactly symmetric (max |C-C^T| = 3e-8,
+  text rounding) — tolerated, symmetrized, documented in RESULTS.md §4.
+- Two-agent review (quality + simplicity lenses) applied before commit; notable fixes:
+  NaN/Inf gate in validate_covariance (NaN comparisons are False → would have passed!),
+  non-atomic/non-self-healing cache, silent NaN row drops, missing failure-mode tests.
+- Quality: ruff + format + pyright strict + pytest all green (17 tests, 3 on real data).
 
-### Next (after GO)
-- Python scaffolding (uv, pyproject, ruff, pyright strict, pytest, CI), then M4 data
-  pipeline. Note: uv is NOT installed on this host yet; Python 3.14.3 is available
-  (spec wants 3.12+; uv can pin the project interpreter).
+### Next
+- Step 3 (M5/M6): models module — ΛCDM mu(z) vs astropy oracle (<1e-6 mag), Janus
+  mu(z) both forms (eq. 26/28 vs 29) + monotonicity/continuity + Milne nesting tests.
+- Then step 4: chi2 with full covariance (Cholesky solve) + analytic offset
+  marginalization (chi2_p = a - b^2/e), identical pipeline for all 3 models.
 
 ### Key technical insight for later sessions
 - Janus mu(z) nests Milne exactly at q0 = 0 (eq. 29 at q0=0 gives z + z²/2). The

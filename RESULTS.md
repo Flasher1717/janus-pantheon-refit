@@ -196,8 +196,19 @@ Implementation decisions, with reasons:
   first line `1701`, then 1701×1701 values sequentially. The release README warns the
   `_DIAG` error columns must not be used for cosmology: "YOU MUST USE THE FULL
   COVARIANCE".
-- Cut: $z_{HD} > 0.01$ to limit peculiar-velocity contamination (the standard
-  cosmology-only choice when not using the SH0ES Cepheid calibration).
+- *Measured file property:* the released matrix is not bit-exactly symmetric — max
+  $|C - C^T| = 3\times10^{-8}$ mag², a decimal-rounding artifact of the text format
+  (diagonal entries are $\sim 0.03$ mag², six orders of magnitude larger). The pipeline
+  validates symmetry within a $10^{-6}$ relative tolerance, then uses
+  $(C + C^T)/2$. Positive definiteness is checked by Cholesky factorization.
+- SHA256 of the downloaded files (pinned in `scripts/download_data.py`):
+  `Pantheon+SH0ES.dat` = `1cb0fc37…198cf8`, `Pantheon+SH0ES_STAT+SYS.cov` =
+  `abf806d9…df0fdc`.
+- Cut: $z_{HD} > 0.01$ to limit peculiar-velocity contamination, plus exclusion of the
+  Cepheid-host calibrator rows (`IS_CALIBRATOR == 0`) — the standard cosmology-only
+  choice when not using the SH0ES Cepheid calibration. **Realized sample: 1580 SNe**
+  ($z_{HD} \in [0.01016, 2.26137]$), matching the cosmology sample size of the
+  Pantheon+ analysis (Brout et al. 2022).
 
 ## 5. Methodology *(pending — will document χ², marginalization, MCMC settings)*
 
