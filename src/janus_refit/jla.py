@@ -86,6 +86,11 @@ BETOULE_STAT_SYS = JLANuisances(alpha=0.141, beta=3.101, m_b1=-19.05, delta_m=-0
 the nuisance vector {0.141, 3.101, -19.05, -0.070} hardcoded in the release's
 reference test src/test.cc."""
 
+BETOULE_STAT = JLANuisances(alpha=0.140, beta=3.139, m_b1=-19.04, delta_m=-0.060)
+"""Betoule et al. 2014, Table 10, row "JLA (stat)" — re-extracted at use time per
+RESULTS.md section 9.2 and double-verified (A&A T10 page and ar5iv agree exactly).
+Used only for the labeled arm-A nuisance sensitivity."""
+
 
 @dataclass(frozen=True)
 class JLASample:
@@ -183,6 +188,56 @@ def build_covariance(
     sigma_pecvel = (5.0 * PECULIAR_VELOCITY_KM_S / C_LIGHT_EXAMPLE_KM_S) / (np.log(10.0) * z)
     cov[np.diag_indices_from(cov)] += sigma_coh**2 + sigma_lens**2 + sigma_pecvel**2
     return validate_covariance(cov)
+
+
+ARM_A_Q0_TARGET = -0.087
+ARM_A_SIGMA_TARGET = 0.015
+ARM_A_CHI2_TARGET = 657.0
+ARM_A_C1_STRONG_HALF_WIDTH = 0.0075
+ARM_A_C2_SIGMA_BOUNDS = (0.010, 0.0225)
+ARM_A_C3_CHI2_HALF_WIDTH = 20.0
+"""Pre-registered arm-A reproduction criteria against the published 2018 targets
+(RESULTS.md section 9.2, committed before any arm-A run; grid closed at Téo's GO,
+2026-06-10). Never re-tuned after seeing any number."""
+
+
+def diagonal_dmb_covariance(table: pd.DataFrame) -> FloatArray:
+    """Arm-A variant A1 "diag-dmb": sigma_i = dmb as released (per the v6 ReadMe it
+    already contains intrinsic dispersion, lensing and redshift uncertainty)."""
+    dmb = table["dmb"].to_numpy(dtype=np.float64)
+    return validate_covariance(np.diag(dmb**2))
+
+
+def propagated_sigma_squared(table: pd.DataFrame, nuisances: JLANuisances) -> FloatArray:
+    """The per-SN diagonal statistical term the official jla.cc adds to its blocks:
+    dmb^2 + (alpha dx1)^2 + (beta dcolor)^2 + 2 alpha cov_m_s - 2 beta cov_m_c
+    - 2 alpha beta cov_s_c."""
+    dmb = table["dmb"].to_numpy(dtype=np.float64)
+    dx1 = table["dx1"].to_numpy(dtype=np.float64)
+    dcolor = table["dcolor"].to_numpy(dtype=np.float64)
+    cov_m_s = table["cov_m_s"].to_numpy(dtype=np.float64)
+    cov_m_c = table["cov_m_c"].to_numpy(dtype=np.float64)
+    cov_s_c = table["cov_s_c"].to_numpy(dtype=np.float64)
+    alpha, beta = nuisances.alpha, nuisances.beta
+    return (
+        dmb**2
+        + (alpha * dx1) ** 2
+        + (beta * dcolor) ** 2
+        + 2.0 * alpha * cov_m_s
+        - 2.0 * beta * cov_m_c
+        - 2.0 * alpha * beta * cov_s_c
+    )
+
+
+def diagonal_propagated_covariance(table: pd.DataFrame, nuisances: JLANuisances) -> FloatArray:
+    """Arm-A variant A2 "diag-propagated": the jla.cc per-SN diagonal alone."""
+    return validate_covariance(np.diag(propagated_sigma_squared(table, nuisances)))
+
+
+def heliocentric_factor(z_cmb: FloatArray, z_hel: FloatArray) -> FloatArray:
+    """5 log10((1+zhel)/(1+zcmb)) — the labeled redshift-convention sensitivity of
+    RESULTS.md section 9.2 (the release ReadMe-vs-test.cc divergence)."""
+    return 5.0 * np.log10((1.0 + z_hel) / (1.0 + z_cmb))
 
 
 def load_jla_sample(jla_dir: Path, nuisances: JLANuisances = BETOULE_STAT_SYS) -> JLASample:
