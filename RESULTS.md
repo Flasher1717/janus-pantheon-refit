@@ -911,3 +911,62 @@ consistent with $M_B^1 = -19.05$ being quoted for the same fiducial
 $H_0 = 70$ km/s/Mpc our evaluator uses. Side observation, relevant to arm A: a
 full-covariance $\chi^2$ at the published ΛCDM optimum is $\approx 683$, i.e.
 26 above P1's reported 657 — in line with the §9.1 arithmetic observation.
+
+### 9.3 Arm A results *(M13, measured 2026-06-10 on this host, `scripts/run_jla_arm_a.py`)*
+
+All eight variants of the closed §9.2 grid, nuisances fixed at Table 10
+"JLA (stat+sys)", free parameters $q_0$ + offset, z = zcmb, 740 SNe, dof = 738.
+Targets: $q_0^* = -0.087$, $\sigma^* = 0.015$, $\chi^{2*} = 657$.
+
+| Error model | Host step | $q_0$ | $\sigma(q_0)$ | $\chi^2$ | C1 | C2 | C3 |
+|---|---|---|---|---|---|---|---|
+| diag-dmb | step | $-0.045412$ | $0.009676$ | $1678.300$ | fail | fail | fail |
+| diag-dmb | no step | $-0.061978$ | $0.009407$ | $1719.399$ | fail | fail | fail |
+| diag-propagated | step | $-0.070631$ | $0.015362$ | $746.229$ | fail | PASS | fail |
+| **diag-propagated** | **no step** | $\mathbf{-0.088737}$ | $\mathbf{0.014892}$ | $\mathbf{780.257}$ | **PASS (strong)** | **PASS** | fail |
+| diag-full-C | step | $-0.063322$ | $0.017367$ | $584.468$ | fail | PASS | fail |
+| diag-full-C | no step | $-0.081754$ | $0.016830$ | $612.526$ | PASS (strong) | PASS | fail |
+| full-cov | step | $-0.066887$ | $0.028259$ | $691.308$ | fail | fail | fail |
+| full-cov | no step | $-0.071238$ | $0.028011$ | $702.202$ | fail | fail | fail |
+
+**Verdict, per the pre-registered rule: 0/8 variants pass C1∧C2∧C3 —
+non-reproduction.** The blocking criterion is C3 in every case: no variant lands
+within $\pm 20$ of the published $\chi^2 = 657$ (closest: full-cov/step at
+691.308, $\Delta = +34.3$). **Principal variant** (selection rule, no-passers
+branch): **diag-propagated / no-step**, $q_0 = -0.088737 \pm 0.014892$,
+$\chi^2 = 780.257$ — reported as "non-reproduction, least-distant variant".
+Its distances to the published targets: $|q_0 - q_0^*| = 0.00174 = 0.12\,
+\sigma^*$; $\sigma(q_0)$ within 1% of the published $0.015$; $\chi^2$ off by
+$+123$.
+
+**Sensitivities on the principal variant (labeled, pre-registered):**
+heliocentric factor applied: $q_0 = -0.089553$ ($\delta q_0 = -0.000816$);
+Table 10 "JLA (stat)" nuisance row (double-rendering-verified at use time:
+$\alpha = 0.140 \pm 0.006$, $\beta = 3.139 \pm 0.072$, $M_B^1 = -19.04 \pm 0.01$,
+$\Delta_M = -0.060 \pm 0.012$, $\chi^2/\mathrm{dof} = 717.3/735$):
+$q_0 = -0.089596$ ($\delta q_0 = -0.000859$). Both are $\lesssim 0.06\,\sigma^*$,
+confirming the §9.2 rationale for demoting them to sensitivities.
+
+**Post-hoc commentary (arithmetic on the measured numbers above; the grid stays
+closed and no further run was made):**
+
+1. The published central value and uncertainty are both reproduced to
+   $\sim 0.1\sigma$ by the propagated-diagonal reading with a single $M_B$ — the
+   literal reading of P1 eq. (9), which contains no $\Delta_M$ term, with the
+   per-SN diagonal the official `jla.cc` builds from the lcparams columns.
+2. No reading reproduces $\chi^2 = 657$. Under offset profiling, a uniform
+   rescaling $\sigma_i \to k\sigma_i$ leaves $q_0$ exactly invariant, scales
+   $\chi^2$ by $1/k^2$ and $\sigma(q_0)$ by $k$: the principal variant rescaled to
+   $\chi^2 = 657$ would need $k = 1.090$ and would give $\sigma(q_0) = 0.0162$
+   (still inside the C2 band). The $\chi^2$ mismatch is therefore consistent with
+   a per-SN $\sigma$ normalization differing from all four readings while the
+   estimator — and hence $q_0$ — matches the propagated-diagonal one. P1 does not
+   provide the information needed to identify that normalization (§9.1, ambiguity
+   1).
+3. In all four error models the no-step variant is closer to $q_0^*$ than its
+   step counterpart — consistent with the single-$M_B$ form of P1 eq. (9)
+   (the unexplained "M(G)" axis label of figs. 3/4/7 notwithstanding).
+
+The [TESTS] arm-A item is closed by this section plus
+`tests/test_jla.py::test_arm_a_grid_numbers_are_pinned`, which pins the measured
+numbers above (it asserts reproducibility, never that the criteria pass).

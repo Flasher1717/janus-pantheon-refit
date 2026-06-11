@@ -25,7 +25,7 @@ v1.1 extension (SPEC_V11.md, 2026-06-10) — JLA controlled refit:
       C(alpha,beta) = A·C_eta·Aᵀ + diagonal terms, validation (740×740, symmetry,
       Cholesky), 2018 fit procedure extracted from P1 into RESULTS.md §9.1 with
       page/equation numbers
-- [ ] M13 — Arm A (2018 method reproduction). BEFORE any run: pre-register in
+- [x] M13 — Arm A (2018 method reproduction). BEFORE any run: pre-register in
       RESULTS.md §9.2 (and commit) the reproduction criteria proposed at plan time
       and validated by Téo
 - [ ] M14 — Arm B (clean 3-model comparison on JLA) + final §9 + attribution table.

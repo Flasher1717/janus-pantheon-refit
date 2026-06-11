@@ -234,6 +234,31 @@ def diagonal_propagated_covariance(table: pd.DataFrame, nuisances: JLANuisances)
     return validate_covariance(np.diag(propagated_sigma_squared(table, nuisances)))
 
 
+ARM_A_ERROR_MODELS = ("diag-dmb", "diag-propagated", "diag-full-C", "full-cov")
+"""The four labeled error-model readings of the closed arm-A grid (RESULTS.md 9.2)."""
+
+
+def arm_a_covariance(
+    error_model: str,
+    table: pd.DataFrame,
+    c_eta: FloatArray,
+    sigma_mu: FloatArray,
+    nuisances: JLANuisances,
+) -> FloatArray:
+    """Dispatch for the pre-registered arm-A error models (RESULTS.md section 9.2)."""
+    if error_model == "diag-dmb":
+        return diagonal_dmb_covariance(table)
+    if error_model == "diag-propagated":
+        return diagonal_propagated_covariance(table, nuisances)
+    full = build_covariance(c_eta, sigma_mu, nuisances)
+    if error_model == "diag-full-C":
+        return validate_covariance(np.diag(np.diag(full)))
+    if error_model == "full-cov":
+        return full
+    msg = f"unknown arm-A error model: {error_model}"
+    raise ValueError(msg)
+
+
 def heliocentric_factor(z_cmb: FloatArray, z_hel: FloatArray) -> FloatArray:
     """5 log10((1+zhel)/(1+zcmb)) — the labeled redshift-convention sensitivity of
     RESULTS.md section 9.2 (the release ReadMe-vs-test.cc divergence)."""

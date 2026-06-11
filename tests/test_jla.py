@@ -1,9 +1,11 @@
+from dataclasses import replace
+
 import numpy as np
 import pytest
 from helpers import JLA_DIR, requires_jla_data
 
 from janus_refit._types import FloatArray
-from janus_refit.fitting import fit_lcdm
+from janus_refit.fitting import fit_janus, fit_lcdm
 from janus_refit.jla import (
     BETOULE_OMEGA_M,
     BETOULE_OMEGA_M_SIGMA,
@@ -12,6 +14,7 @@ from janus_refit.jla import (
     OMEGA_M_GATE_N_SIGMA,
     JLANuisances,
     JLASample,
+    arm_a_covariance,
     build_covariance,
     build_mu_hat,
     load_c_eta,
@@ -129,6 +132,37 @@ def test_lcdm_anchor_omega_m_within_published_2sigma(sample: JLASample) -> None:
     fit = fit_lcdm(chi2)
     half_width = OMEGA_M_GATE_N_SIGMA * BETOULE_OMEGA_M_SIGMA
     assert abs(fit.params["omega_m"] - BETOULE_OMEGA_M) <= half_width
+
+
+ARM_A_PINNED: dict[tuple[str, bool], tuple[float, float, float]] = {
+    ("diag-dmb", True): (-0.045412, 0.009676, 1678.300),
+    ("diag-dmb", False): (-0.061978, 0.009407, 1719.399),
+    ("diag-propagated", True): (-0.070631, 0.015362, 746.229),
+    ("diag-propagated", False): (-0.088737, 0.014892, 780.257),
+    ("diag-full-C", True): (-0.063322, 0.017367, 584.468),
+    ("diag-full-C", False): (-0.081754, 0.016830, 612.526),
+    ("full-cov", True): (-0.066887, 0.028259, 691.308),
+    ("full-cov", False): (-0.071238, 0.028011, 702.202),
+}
+"""(q0, sigma_q0, chi2) per (error model, host step) — RESULTS.md section 9.3,
+measured 2026-06-10."""
+
+
+def test_arm_a_grid_numbers_are_pinned(c_eta: FloatArray, sigma_mu: FloatArray) -> None:
+    """Pins the RESULTS.md section 9.3 measured numbers for reproducibility only.
+    Deliberately NO assertion that any pre-registered criterion passes: the §9.2
+    verdict was "non-reproduction", and a non-reproduction is a result, not a CI
+    failure."""
+    table = read_lcparams(JLA_DIR / "jla_lcparams.txt")
+    z_cmb = table["zcmb"].to_numpy(dtype=np.float64)
+    for (error_model, host_step), (q0, sigma, chi2_value) in ARM_A_PINNED.items():
+        cov = arm_a_covariance(error_model, table, c_eta, sigma_mu, BETOULE_STAT_SYS)
+        nuisances = BETOULE_STAT_SYS if host_step else replace(BETOULE_STAT_SYS, delta_m=0.0)
+        mu_hat = build_mu_hat(table, nuisances)
+        fit = fit_janus(MarginalizedChi2.from_arrays(z=z_cmb, m_obs=mu_hat, cov=cov))
+        assert abs(fit.params["q0"] - q0) < 1e-6, (error_model, host_step)
+        assert abs(fit.sigmas["q0"] - sigma) < 1e-6, (error_model, host_step)
+        assert abs(fit.chi2 - chi2_value) < 1e-3, (error_model, host_step)
 
 
 def test_chi2_on_fixed_subsample_is_deterministic_across_loads(sample: JLASample) -> None:

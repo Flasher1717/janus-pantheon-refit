@@ -12,25 +12,21 @@ from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
-from janus_refit._types import FloatArray
-from janus_refit.data import validate_covariance
 from janus_refit.fitting import FitResult, fit_janus
 from janus_refit.jla import (
     ARM_A_C1_STRONG_HALF_WIDTH,
     ARM_A_C2_SIGMA_BOUNDS,
     ARM_A_C3_CHI2_HALF_WIDTH,
     ARM_A_CHI2_TARGET,
+    ARM_A_ERROR_MODELS,
     ARM_A_Q0_TARGET,
     ARM_A_SIGMA_TARGET,
     BETOULE_STAT,
     BETOULE_STAT_SYS,
     JLANuisances,
-    build_covariance,
+    arm_a_covariance,
     build_mu_hat,
-    diagonal_dmb_covariance,
-    diagonal_propagated_covariance,
     heliocentric_factor,
     load_c_eta,
     read_lcparams,
@@ -39,25 +35,6 @@ from janus_refit.jla import (
 from janus_refit.likelihood import MarginalizedChi2
 
 JLA_DIR = Path(__file__).resolve().parents[1] / "data" / "jla"
-
-ERROR_MODELS = ("diag-dmb", "diag-propagated", "diag-full-C", "full-cov")
-
-
-def covariance_for(
-    error_model: str,
-    nuisances: JLANuisances,
-    table: pd.DataFrame,
-    c_eta: FloatArray,
-    sigma_mu: FloatArray,
-) -> FloatArray:
-    if error_model == "diag-dmb":
-        return diagonal_dmb_covariance(table)
-    if error_model == "diag-propagated":
-        return diagonal_propagated_covariance(table, nuisances)
-    full = build_covariance(c_eta, sigma_mu, nuisances)
-    if error_model == "diag-full-C":
-        return validate_covariance(np.diag(np.diag(full)))
-    return full
 
 
 def criteria(fit: FitResult) -> tuple[bool, bool, bool, bool]:
@@ -104,8 +81,8 @@ def main() -> int:
         f"chi2* = {ARM_A_CHI2_TARGET} (dof 738)"
     )
     fits: dict[tuple[str, bool], FitResult] = {}
-    for error_model in ERROR_MODELS:
-        cov = covariance_for(error_model, BETOULE_STAT_SYS, table, c_eta, sigma_mu)
+    for error_model in ARM_A_ERROR_MODELS:
+        cov = arm_a_covariance(error_model, table, c_eta, sigma_mu, BETOULE_STAT_SYS)
         for host_step in (True, False):
             nuisances = step_nuisances(BETOULE_STAT_SYS, host_step)
             mu_hat = build_mu_hat(table, nuisances)
@@ -128,7 +105,7 @@ def main() -> int:
     print("\nsensitivities on the principal variant (labeled, delta q0):")
     nuisances = step_nuisances(BETOULE_STAT_SYS, host_step)
     mu_hat = build_mu_hat(table, nuisances)
-    cov = covariance_for(error_model, BETOULE_STAT_SYS, table, c_eta, sigma_mu)
+    cov = arm_a_covariance(error_model, table, c_eta, sigma_mu, BETOULE_STAT_SYS)
 
     mu_hat_helio = mu_hat - heliocentric_factor(z_cmb, z_hel)
     fit_helio = fit_janus(MarginalizedChi2.from_arrays(z=z_cmb, m_obs=mu_hat_helio, cov=cov))
@@ -140,7 +117,7 @@ def main() -> int:
 
     nuisances_stat = step_nuisances(BETOULE_STAT, host_step)
     mu_hat_stat = build_mu_hat(table, nuisances_stat)
-    cov_stat = covariance_for(error_model, nuisances_stat, table, c_eta, sigma_mu)
+    cov_stat = arm_a_covariance(error_model, table, c_eta, sigma_mu, nuisances_stat)
     fit_stat = fit_janus(MarginalizedChi2.from_arrays(z=z_cmb, m_obs=mu_hat_stat, cov=cov_stat))
     print(
         f"  Table 10 'JLA (stat)' row:  q0 = {fit_stat.params['q0']:+.6f}"
