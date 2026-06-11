@@ -21,7 +21,7 @@ Append-only checklist. Items get checked `[x]`, never deleted or reworded.
 
 v1.1 extension (SPEC_V11.md, 2026-06-10) — JLA controlled refit:
 
-- [ ] M12 — JLA acquisition (verified URLs, SHA256 pinned), parsing, full covariance
+- [x] M12 — JLA acquisition (verified URLs, SHA256 pinned), parsing, full covariance
       C(alpha,beta) = A·C_eta·Aᵀ + diagonal terms, validation (740×740, symmetry,
       Cholesky), 2018 fit procedure extracted from P1 into RESULTS.md §9.1 with
       page/equation numbers

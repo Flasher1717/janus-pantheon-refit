@@ -895,3 +895,19 @@ q_0(v1.0, Pantheon+)$; $\Delta_{method} = q_0(A) - q_0(B)$. Mandated statement
 path-dependent — $\Delta_{method}$ is measured on JLA and $\Delta_{data}$ with
 method B; the "method A on Pantheon+" cell stays empty (out of scope), so a
 method×data interaction term is not excluded.
+
+**Anchor run result (M12, measured 2026-06-10 on this host,
+`scripts/run_jla_anchor.py`).** Flat ΛCDM on JLA, full $C(\alpha,\beta)$ at the
+Table 10 stat+sys nuisances, offset profiled, z = zcmb:
+$\Omega_m = 0.295471 \pm 0.033512$ (conditional curvature),
+$\chi^2 = 682.892$ (dof 738; 2 fitted parameters), profiled offset
+$+0.001575$ mag. **Gate PASS**: $|\Omega_m - 0.295| = 0.000471 = 0.014\,\sigma$
+of the published marginal uncertainty. The $\chi^2$ matches the published
+682.9 (735 dof, 5-parameter fit) within 0.008 — consistent with our nuisances
+being fixed at that fit's own optimum — and the conditional
+$\sigma(\Omega_m) = 0.0335$ is close to the marginal 0.034, indicating weak
+nuisance–$\Omega_m$ correlation at the optimum. The near-zero profiled offset is
+consistent with $M_B^1 = -19.05$ being quoted for the same fiducial
+$H_0 = 70$ km/s/Mpc our evaluator uses. Side observation, relevant to arm A: a
+full-covariance $\chi^2$ at the published ΛCDM optimum is $\approx 683$, i.e.
+26 above P1's reported 657 — in line with the §9.1 arithmetic observation.

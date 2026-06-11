@@ -3,9 +3,13 @@ import pytest
 from helpers import JLA_DIR, requires_jla_data
 
 from janus_refit._types import FloatArray
+from janus_refit.fitting import fit_lcdm
 from janus_refit.jla import (
+    BETOULE_OMEGA_M,
+    BETOULE_OMEGA_M_SIGMA,
     BETOULE_STAT_SYS,
     N_SNE,
+    OMEGA_M_GATE_N_SIGMA,
     JLANuisances,
     JLASample,
     build_covariance,
@@ -115,6 +119,16 @@ def test_sigma_mu_rows_align_with_lcparams_rows(sigma_mu: FloatArray) -> None:
     table = read_lcparams(JLA_DIR / "jla_lcparams.txt")
     z_cmb = table["zcmb"].to_numpy(dtype=np.float64)
     assert float(np.max(np.abs(sigma_mu[:, 2] - z_cmb))) < 1e-6
+
+
+def test_lcdm_anchor_omega_m_within_published_2sigma(sample: JLASample) -> None:
+    """Pre-registered M12 anchor gate (RESULTS.md section 9.2): an arm-B flat-LCDM
+    fit on JLA must land within 2 sigma of the published SNe-only Omega_m = 0.295
+    +/- 0.034; outside it the conclusion is a pipeline bug, never cosmology."""
+    chi2 = MarginalizedChi2.from_arrays(z=sample.z_cmb, m_obs=sample.mu_hat, cov=sample.cov)
+    fit = fit_lcdm(chi2)
+    half_width = OMEGA_M_GATE_N_SIGMA * BETOULE_OMEGA_M_SIGMA
+    assert abs(fit.params["omega_m"] - BETOULE_OMEGA_M) <= half_width
 
 
 def test_chi2_on_fixed_subsample_is_deterministic_across_loads(sample: JLASample) -> None:
