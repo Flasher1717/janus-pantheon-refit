@@ -156,7 +156,7 @@
   vs published 2018, link to RESULTS.md at the tag).
 - No result, RESULTS.md section 5-7 or test was modified at publication time.
 
-## Project closed — 2026-06-10
+## Project closed (v1.0) — 2026-06-10
 
 All milestones M0-M11 complete. Published at
 github.com/Flasher1717/janus-pantheon-refit (v1.0.0). The repository is the record:
@@ -165,9 +165,72 @@ MILESTONES.md (all checked), this file (session history). Out of scope forever p
 SPEC: CMB/BAO/N-body, SH0ES calibration, any "validated/refuted" conclusion.
 - M11 (CI badge) stays unchecked until CI actually runs green on GitHub — no push
   without explicit GO (perso/org undecided).
+Reopened the same day by the v1.1 extension (SPEC_V11.md) — Session 3 below.
 
 ### Key technical insight for later sessions
 - Janus mu(z) nests Milne exactly at q0 = 0 (eq. 29 at q0=0 gives z + z²/2). The
   Janus-vs-Milne ΔAIC therefore directly tests the preference for q0 < 0.
 - Implement both algebraic forms (26)/(28) and (29) and test their agreement; use (29)
   for stability near q0 → 0.
+
+## Session 3 — 2026-06-10 (v1.1 extension: controlled JLA refit, SPEC_V11.md)
+
+### Done
+- v1.1 kickoff: SPEC_V11.md committed verbatim (immutable), M12-M14 appended to
+  MILESTONES.md. Ritual run first (pytest green: 78 passed, 1 xpassed).
+- Research before plan: P1 fit procedure extracted first-hand + 3 blind agent
+  extractions, all concordant — central finding: P1 NEVER defines its chi2 error
+  model (no covariance, no sigma, anywhere). JLA data located on the live
+  first-party host supernovae.in2p3.fr; both v6 tarballs downloaded twice
+  independently, SHA256 concordant, structure verified to the byte. Betoule
+  Table 10 anchors verified on two renderings (a WebFetch summarizer error was
+  caught and rejected in the process). Release-internal divergence found and
+  pre-registered away: ReadMe says "both zcmb and zhel are needed" while the
+  executable reference test.cc (which reproduces the published 682.9) uses zcmb
+  alone -> primary convention = test.cc, heliocentric factor as labeled
+  sensitivity.
+- Plan reviewed by a SPEC-coverage agent (must-fix integrated: pre-registration
+  commit BEFORE the anchor run, whose chi2 would leak variant A4's fate);
+  Téo's GO with 3 decisions: criteria validated as-is, no MCMC, grid of 8
+  closed at the section 9.2 commit + path-dependence sentence mandated for 9.5.
+- M12: download_data.py extended (2 archives + 10 members SHA256-pinned);
+  janus_refit.jla (mu_hat per Betoule eqs 4-5 with the host step at
+  scriptmcut 10.0 strict; C(alpha,beta) by stride-3 reduction of the interleaved
+  2220x2220 C_eta + the three diagonal terms verbatim from the release
+  example.py); covariance verified element-wise (< 1e-14) against an independent
+  dense-A construction; RESULTS.md sections 9.1 + 9.2 committed before any
+  real-data fit. Anchor run: Omega_m = 0.295471 +/- 0.033512 vs published
+  0.295 +/- 0.034 (gate PASS at 0.014 sigma), chi2 = 682.892 vs published 682.9
+  (0.008) — exact external replication of the Betoule likelihood.
+- M13 (arm A, grid closed at 8): verdict per pre-registered criteria —
+  0/8 pass C1^C2^C3 -> NON-REPRODUCTION; blocking criterion is C3 (chi2)
+  everywhere (no variant within +/-20 of the published 657). Principal variant
+  (selection rule): diag-propagated / no-step, q0 = -0.088737 +/- 0.014892
+  (matches published -0.087 +/- 0.015 to 0.12 sigma and 1% on sigma), chi2
+  780.257. Sensitivities (zhel; Table 10 stat row, double-verified at use time):
+  |delta q0| < 0.001. All 8 results pinned in tests (reproducibility only).
+- M14 (arm B = v1.0 pipeline on JLA): LCDM 682.892 (= anchor); Janus
+  q0 = -0.066887 +/- 0.028259, chi2 691.308, dAIC +8.416; Milne 696.347,
+  dAIC +11.455, dBIC +6.848; Janus-vs-Milne dchi2 = -5.039 (AIC -3.039,
+  BIC +1.567 — opposite signs; on Pantheon+ both were positive). Janus minimum
+  parabolic (0.955/1.050 at +/-1 sigma) and 2.37 sigma from the q0 = 0 bound —
+  the 9.2 no-MCMC justification anticipated >= 5 sigma; the no-trigger call is
+  documented as post-hoc and unilateral in 9.4, flagged for Téo at the pre-tag
+  STOP. Non-regression green: the arm-B code path re-derives the frozen v1.0
+  Pantheon+ numbers at recorded precision.
+- Section 9.5 attribution: gap (published 2018 vs v1.0 Pantheon+) -0.065990 =
+  Delta_data -0.045877 (~70%, JLA vs Pantheon+ at fixed v1.0 method) +
+  Delta_method -0.021850 (~33%, on JLA; its error-model/step sub-split is
+  path-dependent and reported under both orderings) + residual +0.001737
+  (= the arm-A reproduction distance). Mandated path-dependence statement
+  included; no significance attached (overlapping compilations).
+- Three-lens honesty review before the final commit (traceability: every
+  number in section 9 reproduced digit-for-digit from fresh runs; no-overclaim:
+  1 must-fix corrected — the Delta_method sub-split dominance claim was
+  path-dependent; consistency: pre-registration commit order verified in git).
+- Quality: ruff + format + pyright strict green; 88 passed + 1 xpassed.
+
+### Next
+- STOP before tag v1.1.0 (SPEC_V11): awaiting Téo's GO for the tag (and push).
+  Open point flagged for that review: the post-hoc no-trigger call on the
+  no-MCMC escape hatch (RESULTS.md section 9.4).

@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from helpers import DATA_DIR, requires_data
 
+from janus_refit import reference
 from janus_refit._types import FloatArray
 from janus_refit.data import SNSample, load_sample
 from janus_refit.fitting import (
@@ -101,6 +102,23 @@ class TestRealPantheonFits:
             assert np.isfinite(fit.chi2)
             assert fit.chi2 > 0.0
         assert -0.25 < janus.params["q0"] < 0.0
+
+    def test_arm_b_code_path_reproduces_frozen_v1_results(self) -> None:
+        """v1.1 non-regression (SPEC_V11 [TESTS]): the arm-B code path
+        (MarginalizedChi2 + fit_*) re-derives the frozen v1.0 Pantheon+ numbers
+        of janus_refit.reference at their recorded precision."""
+        chi2 = self.chi2()
+        lcdm = fit_lcdm(chi2)
+        janus = fit_janus(chi2)
+        milne = fit_milne(chi2)
+        assert abs(lcdm.params["omega_m"] - reference.M7_LCDM_OMEGA_M) < 1e-6
+        assert abs(lcdm.sigmas["omega_m"] - reference.M7_LCDM_SIGMA) < 1e-6
+        assert abs(lcdm.chi2 - reference.M7_LCDM_CHI2) < 1e-3
+        assert abs(janus.params["q0"] - reference.M7_JANUS_Q0) < 1e-6
+        assert abs(janus.sigmas["q0"] - reference.M7_JANUS_SIGMA) < 1e-6
+        assert abs(janus.chi2 - reference.M7_JANUS_CHI2) < 1e-3
+        assert abs(milne.chi2 - reference.M7_MILNE_CHI2) < 1e-3
+        assert lcdm.n_points == reference.N_SNE
 
 
 def test_fit_result_chi2_dof() -> None:

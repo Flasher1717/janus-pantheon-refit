@@ -783,8 +783,9 @@ used by the implementation, from the v6 ReadMe / `example.py` / `jla.cc`:
   redshift, not an uncertainty; the peculiar-velocity diagonal term is computed
   from it as `(5*150/3e5)/(ln 10 * z)` per the release `example.py` (its `3e5`
   approximation of $c$ is kept verbatim in `janus_refit.jla` for bit-comparable
-  construction). Row order matches `jla_lcparams.txt` (max $|\Delta z| < 5\times
-  10^{-7}$ over the full sequence, tested).
+  construction). Row order matches `jla_lcparams.txt` (max $|\Delta z| =
+  5.0\times 10^{-7}$ measured over the full sequence; asserted at $< 10^{-6}$ in
+  the tests).
 - The official `jla.cc` adds the per-SN diagonal statistical term
   $d_{mb}^2 + (\alpha\,d_{x1})^2 + (\beta\,d_{color})^2 + 2\alpha\,cov_{m,s}
   - 2\beta\,cov_{m,c} - 2\alpha\beta\,cov_{s,c}$ on top of the six compressed
@@ -897,7 +898,12 @@ method B; the "method A on Pantheon+" cell stays empty (out of scope), so a
 method×data interaction term is not excluded.
 
 **Anchor run result (M12, measured 2026-06-10 on this host,
-`scripts/run_jla_anchor.py`).** Flat ΛCDM on JLA, full $C(\alpha,\beta)$ at the
+`scripts/run_jla_anchor.py`; appended after the pre-registration commit —
+git: pre-registration `d4719d0`, this result `d644edb`).** One commit-order
+acknowledgment for completeness: a non-fit determinism test (a single $\chi^2$
+evaluation at fixed $q_0 = -0.1$ on a 50-SN subsample, asserting only equality
+across loads, mandated by SPEC_V11 [TESTS]) predates the pre-registration
+commit; no fit on real JLA data does. Flat ΛCDM on JLA, full $C(\alpha,\beta)$ at the
 Table 10 stat+sys nuisances, offset profiled, z = zcmb:
 $\Omega_m = 0.295471 \pm 0.033512$ (conditional curvature),
 $\chi^2 = 682.892$ (dof 738; 2 fitted parameters), profiled offset
@@ -950,19 +956,21 @@ confirming the §9.2 rationale for demoting them to sensitivities.
 **Post-hoc commentary (arithmetic on the measured numbers above; the grid stays
 closed and no further run was made):**
 
-1. The published central value and uncertainty are both reproduced to
+1. The published central value and uncertainty are both matched to
    $\sim 0.1\sigma$ by the propagated-diagonal reading with a single $M_B$ — the
    literal reading of P1 eq. (9), which contains no $\Delta_M$ term, with the
-   per-SN diagonal the official `jla.cc` builds from the lcparams columns.
+   per-SN diagonal the official `jla.cc` builds from the lcparams columns
+   ("matched", not "reproduced": the pre-registered reproduction verdict above
+   stands).
 2. No reading reproduces $\chi^2 = 657$. Under offset profiling, a uniform
    rescaling $\sigma_i \to k\sigma_i$ leaves $q_0$ exactly invariant, scales
    $\chi^2$ by $1/k^2$ and $\sigma(q_0)$ by $k$: the principal variant rescaled to
    $\chi^2 = 657$ would need $k = 1.090$ and would give $\sigma(q_0) = 0.0162$
    (still inside the C2 band). The $\chi^2$ mismatch is therefore consistent with
-   a per-SN $\sigma$ normalization differing from all four readings while the
-   estimator — and hence $q_0$ — matches the propagated-diagonal one. P1 does not
-   provide the information needed to identify that normalization (§9.1, ambiguity
-   1).
+   the hypothesis of a per-SN $\sigma$ normalization differing from all four
+   readings while the estimator — and hence $q_0$ — would coincide with the
+   propagated-diagonal one. P1 does not provide the information needed to
+   identify that normalization (§9.1, ambiguity 1).
 3. In all four error models the no-step variant is closer to $q_0^*$ than its
    step counterpart — consistent with the single-$M_B$ form of P1 eq. (9)
    (the unexplained "M(G)" axis label of figs. 3/4/7 notwithstanding).
@@ -970,3 +978,105 @@ closed and no further run was made):**
 The [TESTS] arm-A item is closed by this section plus
 `tests/test_jla.py::test_arm_a_grid_numbers_are_pinned`, which pins the measured
 numbers above (it asserts reproducibility, never that the criteria pass).
+
+### 9.4 Arm B results *(M14, measured 2026-06-10 on this host, `scripts/run_jla_arm_b.py`)*
+
+The v1.0 pipeline on JLA: full $C(\alpha,\beta)$ at the Table 10 stat+sys
+nuisances (host-mass step applied — the complete Betoule estimator), analytic
+offset profiling, z = zcmb, 740 SNe, shared likelihood for the three models.
+
+| Model | k | params | $\chi^2$ | dof | $\chi^2$/dof | AIC | BIC | ΔAIC | ΔBIC |
+|---|---|---|---|---|---|---|---|---|---|
+| Flat ΛCDM | 2 | $\Omega_m = 0.295471 \pm 0.033512$ | 682.892 | 738 | 0.9253 | 686.892 | 696.106 | 0 | 0 |
+| Janus | 2 | $q_0 = -0.066887 \pm 0.028259$ | 691.308 | 738 | 0.9367 | 695.308 | 704.521 | +8.416 | +8.416 |
+| Milne | 1 | — | 696.347 | 739 | 0.9423 | 698.347 | 702.954 | +11.455 | +6.848 |
+
+Janus vs Milne directly (nested at $q_0 = 0$, §3): $\Delta\chi^2 = -5.039$ for
+the one extra parameter; ΔAIC $= -3.039$ (Janus lower), ΔBIC $= +1.567$ (Milne
+lower) — here the two criteria disagree in sign, whereas on Pantheon+ both were
+positive (+0.054 / +5.419, §7.4); the $\chi^2$ gain from the one extra parameter
+is larger here ($-5.039$ vs $-1.946$). $\chi^2/\mathrm{dof} < 1$ inherits the §8.1 rule:
+$\sigma_{coh}$ was tuned by Betoule et al. per survey via REML, so absolute
+$\chi^2/\mathrm{dof}$ is not goodness-of-fit evidence; only same-covariance
+differences are read.
+
+**Janus minimum diagnostics (the §9.2 no-MCMC escape hatch, checked).** The
+minimum is interior and close to parabolic: $\chi^2(q_0 \pm 1\sigma) -
+\chi^2_{min} = 0.955 / 1.050$ (parabola: 1) and $\chi^2(q_0 \pm 2\sigma) -
+\chi^2_{min} = 3.655 / 4.424$ (parabola: 4). Distance to the $q_0 = 0$ domain
+boundary: $2.37\sigma$. Transparency note: §9.2 justified the no-MCMC decision
+anticipating a best fit "near the published $-0.087$ ($\gtrsim 5\sigma$ from the
+boundary)"; the measured arm-B fit sits at $2.37\sigma$ instead. The §9.2 STOP
+trigger ("non-parabolic or boundary-adjacent") carried no numeric threshold, so
+the no-trigger call here is post-hoc and made unilaterally in-session; it is
+flagged for Téo's review at the pre-tag STOP. Its substance: v1.1 quotes only
+local curvature uncertainties (no Bayesian interval is derived, so prior
+truncation at $q_0 = 0$ affects nothing that is reported), the profile numbers
+above bound the non-parabolicity directly, and the minimum is interior. A
+posterior under the bounded prior would be truncation-affected to a degree not
+measured here (v1.0 measured $-15.3\%$ on $\sigma$ at $1.42\sigma$ from the
+boundary; this minimum sits at $2.37\sigma$); none is quoted.
+
+**Non-regression (SPEC_V11 [TESTS]).** The exact arm-B code path
+(`MarginalizedChi2` + `fit_lcdm`/`fit_janus`/`fit_milne`) re-derives the frozen
+v1.0 Pantheon+ numbers of `janus_refit.reference` at their recorded precision
+(`tests/test_fitting.py::test_arm_b_code_path_reproduces_frozen_v1_results`,
+green 2026-06-10; full suite 88 passed + 1 xpassed).
+
+### 9.5 Attribution *(M14)*
+
+All four measured cells, with the published 2018 value alongside:
+
+| | 2018-style method (arm A principal variant; §9.3 verdict: non-reproduction) | v1.0 method (full cov, offset profiled) |
+|---|---|---|
+| **JLA 740** | $q_0 = -0.088737 \pm 0.014892$ — published 2018: $-0.087 \pm 0.015$ | $q_0 = -0.066887 \pm 0.028259$ |
+| **Pantheon+ 1580** | — (out of scope) | $q_0 = -0.021010 \pm 0.014767$ (frozen v1.0, §7.1) |
+
+Decomposition of the published-2018 vs v1.0-Pantheon+ gap, $-0.087 - (-0.021010)
+= -0.065990$:
+
+- $\Delta_{data} = q_0(\mathrm{B, JLA}) - q_0(\mathrm{v1.0, Pantheon+}) =
+  -0.066887 - (-0.021010) = -0.045877$ — the dataset change at fixed (v1.0)
+  method.
+- $\Delta_{method} = q_0(\mathrm{A}) - q_0(\mathrm{B}) = -0.088737 - (-0.066887)
+  = -0.021850$ — the method change at fixed data (JLA). Within the already-
+  measured §9.3 grid this sub-split is itself path-dependent: ordering
+  error-model-then-step gives $-0.0175$ (full-cov → diag-propagated, at no-step)
+  $+ (-0.0044)$ (step → no-step, at full-cov), while the alternate ordering gives
+  $-0.0037$ (at step) $+ (-0.0181)$ (at diag-propagated) — the two factors
+  interact strongly and neither "dominates" in a path-independent sense. All
+  four numbers come from the §9.3 table; no new run was made.
+- Sum: $-0.067727$; residual $= \mathrm{gap} - \Delta_{data} - \Delta_{method}
+  = +0.001737$, which is exactly $q_0^{pub} - q_0(\mathrm{A})$ — the arm-A
+  reproduction distance ($0.12\,\sigma^*$).
+
+**Mandated statement (Téo, GO 2026-06-10):** this decomposition is
+path-dependent — $\Delta_{method}$ is measured on JLA and $\Delta_{data}$ with
+method B; the "method A on Pantheon+" cell stays empty (out of scope), so a
+method×data interaction term is not excluded.
+
+Reading, in the usual neutral register and within the stated limits:
+
+- Under the same (v1.0) pipeline, moving from Pantheon+ (1580 SNe, Tripp-
+  standardized `m_b_corr`, full STAT+SYS) to JLA (740 SNe, SALT2 parameters
+  standardized with fixed published nuisances, full $C(\alpha,\beta)$) moves
+  $q_0$ from $-0.021$ to $-0.067$: about 70% of the total gap
+  ($\Delta_{data}/\mathrm{gap} = 0.695$).
+- On JLA, moving from the v1.0 method to the arm-A principal variant moves
+  $q_0$ from $-0.067$ to $-0.089$: about 33% of the total gap (error-model
+  reading and host-step treatment jointly; their individual shares are
+  path-dependent, see above).
+- No significance is attached to these shares: the two compilations overlap
+  (Pantheon+ also includes SNLS, SDSS and low-z samples, so the two $q_0$'s are
+  not independent measurements), the $\sigma$'s come from different covariances,
+  and the decomposition is path-dependent as stated above.
+- The arm-A anchor of the method column carries the §9.3 verdict:
+  "non-reproduction, least-distant variant" — its central value and uncertainty
+  match the published fit to $0.12\sigma$ and 1%, but its $\chi^2$ is $+123$
+  off, so the exact 2018 error normalization remains unidentified (§9.1,
+  ambiguity 1). The $\Delta_{method}$ figure assumes the principal variant
+  approximates the 2018 method; that assumption rests on C1+C2 alone.
+- Out-of-scope guard, restated: none of this validates or refutes any model;
+  v1.1 attributes a numerical difference between two published-style fits to
+  dataset vs method components, on SNe Ia alone, and nothing more (§8.3 applies
+  unchanged).

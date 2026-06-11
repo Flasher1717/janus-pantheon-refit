@@ -28,5 +28,5 @@ v1.1 extension (SPEC_V11.md, 2026-06-10) — JLA controlled refit:
 - [x] M13 — Arm A (2018 method reproduction). BEFORE any run: pre-register in
       RESULTS.md §9.2 (and commit) the reproduction criteria proposed at plan time
       and validated by Téo
-- [ ] M14 — Arm B (clean 3-model comparison on JLA) + final §9 + attribution table.
+- [x] M14 — Arm B (clean 3-model comparison on JLA) + final §9 + attribution table.
       STOP before tag v1.1.0
