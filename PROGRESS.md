@@ -241,7 +241,12 @@ Reopened the same day by the v1.1 extension (SPEC_V11.md) — Session 3 below.
   non-parabolicity. RESULTS.md section 9.4 updated with the
   prediction/measurement pair.
 
-### Next
-- Tag v1.1.0 + push + GitHub release (factual notes, the three q0 of the
-  attribution chain, link to RESULTS.md section 9), per the pre-tag GO.
-  CI must be green before anything is closed (v1.0 M11 rule).
+## v1.1 closed — 2026-06-10
+
+M12-M14 plus the pre-tag GO addendum (MCMC cross-check) complete. Tag v1.1.0
+pushed to github.com/Flasher1717/janus-pantheon-refit with a GitHub release
+(factual notes: anchor, arm-A verdict, the three q0 of the attribution chain,
+link to RESULTS.md section 9 at the tag). CI green on the full matrix
+(ubuntu/windows x 3.12/3.14, run 27319840660) before this closing note, per the
+v1.0 M11 rule. No v1.0 result was modified; the frozen Pantheon+ numbers
+re-derive through the arm-B code path (non-regression test, green).
