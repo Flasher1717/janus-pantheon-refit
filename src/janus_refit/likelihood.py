@@ -33,17 +33,21 @@ class MarginalizedChi2:
     _e: float
 
     @classmethod
-    def from_sample(cls, sample: SNSample) -> "MarginalizedChi2":
-        cho = cho_factor(sample.cov, lower=True)
-        ones = np.ones_like(sample.m_b_corr)
+    def from_arrays(cls, z: FloatArray, m_obs: FloatArray, cov: FloatArray) -> "MarginalizedChi2":
+        cho = cho_factor(cov, lower=True)
+        ones = np.ones_like(m_obs)
         cinv_ones = cho_solve(cho, ones)
         return cls(
-            z=sample.z,
-            m_obs=sample.m_b_corr,
+            z=z,
+            m_obs=m_obs,
             _cho=cho,
             _cinv_ones=cinv_ones,
             _e=float(ones @ cinv_ones),
         )
+
+    @classmethod
+    def from_sample(cls, sample: SNSample) -> "MarginalizedChi2":
+        return cls.from_arrays(sample.z, sample.m_b_corr, sample.cov)
 
     @property
     def n_points(self) -> int:
