@@ -676,3 +676,222 @@ prior-dependence and boundary-truncation caveats.
   (§7.3); this project does not attribute the difference.
 - The absolute $\chi^2/\mathrm{dof}$ values must not be quoted as goodness-of-fit
   evidence for any model (§8.1, first bullet).
+
+## 9. v1.1 extension — controlled refit on JLA *(SPEC_V11.md; M12–M14, 2026-06-10)*
+
+§7.3 ends with the observation that attributing the gap between the published 2018
+$q_0 = -0.087 \pm 0.015$ (JLA, 740 SNe) and the frozen v1.0 Pantheon+
+$q_0 = -0.021010 \pm 0.014767$ to data vs method would require a controlled refit
+on JLA. That refit is the single object of this extension (spec: `SPEC_V11.md`,
+verbatim and immutable). Two arms: **arm A** reproduces the 2018 method as P1
+describes it; **arm B** runs the exact v1.0 pipeline (full covariance, analytic
+offset profiling) on JLA. The frozen v1.0 results (§5–§7) are not touched.
+§9.3–§9.5 are filled at M13/M14.
+
+### 9.1 The 2018 procedure as extracted, the JLA release, and the Betoule anchors
+
+**Extraction method.** First-hand reading of the P1 page renders
+(`papers/render_2018/`, HAL PDF: render page = printed page + 1), cross-checked by
+three independent blind extractions (separate agents, separate reading orders); all
+four agree on every statement below. Page numbers are printed-paper pages.
+
+**The 2018 fit procedure (P1, printed p. 7 — all verbatim):**
+
+- "We can derive (see annex A) the relation for the bolometric magnitude with
+  respect to the redshift z :" eq. (7):
+  $m_{bol} = 5\log_{10}\!\big[z + z^2(1-q_0)/(1+q_0 z+\sqrt{1+2q_0 z})\big] + cst$,
+  "where $q_0 < 0$ and $1 + 2q_0z > 0$."
+- "Fitting $q_0$ and $cst$ to available observational data [20], gives :"
+  eq. (8): $q_0 = -0.087 \pm 0.015$.
+- eq. (9): $\mu = m^*_B - M_B + \alpha X_1 - \beta C$; "where $m^*_B$ is the
+  observed peak magnitude in rest frame B band, $X_1$ is the time stretching of the
+  light curve and $C$ the supernova color at maximum brightness."
+- "Both $M_B$ , $\alpha$ and $\beta$ are nuisance parameters in the distance
+  estimate. We took the values given in ref.[20] corresponding to the best fit of
+  the whole set of combined data (740 supernovae) with $\Lambda CDM$ model."
+- "With our best fit, we have :$\chi^2/d.o.f.$ = 657/738 (740 points and 2
+  parameters)."
+- Ref. [20] (printed p. 14) is "M. Betoule et al. Improved cosmological constraints
+  from a joint analysis of the sdss-ii and snls supernova sample. Astronomy and
+  Astrophysics, A22:568, 2014." — the JLA paper.
+- Free parameters: exactly two, $q_0$ and $cst$ (dof $= 740 - 2 = 738$); $H_0$ is
+  not fitted (degenerate with $cst$; it only enters the age, eq. 10 / Table 1).
+
+**What P1 does NOT specify (each handled as labeled variants or documented, never
+silently resolved):**
+
+1. **The error model of the $\chi^2$ is never defined** — no $\chi^2$ formula, no
+   covariance (full or diagonal), no $\sigma$ definition anywhere in the paper.
+   Only indirect hints: fig. 5 ("Residuals from the best fit versus redshift") and
+   fig. 6 ("Standard deviation versus redshift", y-axis "Standard deviations")
+   imply some per-SN $\sigma$; it is never identified.
+2. The numerical values of the fixed $M_B, \alpha, \beta$ are not quoted (only the
+   reference to the Betoule combined-set ΛCDM best fit).
+3. The host-mass step $\Delta_M$ is never mentioned in the text and eq. (9) has a
+   single $M_B$ — but the y-axis of figs. 3, 4 and 7 reads
+   "$\mu = m^*_B - M(G) + \alpha X - \beta C$", an undefined host-dependent
+   "$M(G)$" suggesting the JLA convention $M_B^1 + \Delta_M$.
+4. The redshift column used (zcmb vs zhel) and the method behind the $\pm 0.015$
+   are not stated. No data cuts are described (the full 740 are used).
+
+**Betoule et al. 2014 anchors (verified this session on two independent renderings,
+ar5iv and the A&A full HTML, including the dedicated Table 10 page):**
+
+- Table 10, row "JLA (stat+sys)": $\Omega_m = 0.295 \pm 0.034$,
+  $\alpha = 0.141 \pm 0.006$, $\beta = 3.101 \pm 0.075$, $M_B^1 = -19.05 \pm 0.02$,
+  $\Delta_M = -0.070 \pm 0.023$, $\chi^2/\mathrm{dof} = 682.9/735$ (5 parameters
+  fitted simultaneously; fiducial $H_0 = 70$ km/s/Mpc, Sect. 6.1 footnote).
+  Independently confirmed by the nuisance vector `{0.141, 3.101, -19.05, -0.070}`
+  hardcoded in the release reference test `src/test.cc`.
+- Eqs. (4)–(5): $\hat\mu = m^*_B - (M_B^1 + \Delta_M\,\mathbb{1}[M_{stellar} \ge
+  10^{10} M_\odot]) + \alpha X_1 - \beta C$. SNe without measured host mass are
+  assigned to the low-mass bin (Sect. 5.2); in the released `3rdvar` column this is
+  already encoded (observed range [5.0, 11.817], no sentinel; 422/740 SNe above the
+  cut, none exactly at it, so the strict ">" of `jla.cc` vs the "$\ge$" of eq. (5)
+  is immaterial in practice).
+- Sect. 5.5, eqs. (11)–(13): $C_{\eta} = C_{stat}+C_{cal}+C_{model}+C_{bias}+
+  C_{host}+C_{dust}+C_{pecvel}+C_{nonIa}$; $\hat\mu = A\eta - M_B$ with
+  $A = A_0 + \alpha A_1 - \beta A_2$; $C = A C_\eta A^\dagger +
+  \mathrm{diag}(5\sigma_z/(z\ln 10))^2 + \mathrm{diag}(\sigma_{lens}^2) +
+  \mathrm{diag}(\sigma_{coh}^2)$, with $c\sigma_z = 150$ km/s and
+  $\sigma_{lens} = 0.055\,z$; $\sigma_{coh}$ per survey (Table 9: low-z 0.12,
+  SDSS-II 0.11, SNLS 0.08, HST 0.11).
+- Sect. 6.1, eq. (15): $\chi^2 = (\hat\mu - \mu_{\Lambda CDM})^\dagger C^{-1}
+  (\hat\mu - \mu_{\Lambda CDM})$ — the same form as the v1.0 `MarginalizedChi2`
+  (§6.1) up to the offset treatment.
+
+**JLA data provenance (acquired and verified this session).** First-party host
+`https://supernovae.in2p3.fr/sdss_snls_jla/` (release page by Marc Betoule;
+archives `Last-Modified: 2015-03-18`, static for 11 years). Archive SHA256, each
+computed twice from independent full downloads (research agent, then this host):
+`jla_likelihood_v6.tgz` (23,716,633 B)
+`2f06277628ab53ca6590c7da679714b39b2b5a0973c2f8978cebdb1626e762f4`;
+`covmat_v6.tgz` (121,186,969 B)
+`dbb80d7bb11b1cd343d1550c34f3376897a15e98d11171138edcab274eb1e7dd`.
+Per-member SHA256 pins are in `scripts/download_data.py`. Release-internal facts
+used by the implementation, from the v6 ReadMe / `example.py` / `jla.cc`:
+
+- `jla_lcparams.txt`: 740 rows, header verbatim `#name zcmb zhel dz mb dmb x1 dx1
+  color dcolor 3rdvar d3rdvar tmax dtmax cov_m_s cov_m_c cov_s_c set ra dec
+  biascor`; row 1 pinned in `tests/test_jla.py` (SN 03D1au). `dmb` "includes
+  contributions from intrinsic dispersion, lensing, and redshift uncertainty";
+  `dz` is "no longer used by the plugin"; `3rdvar` is the log10 host stellar mass.
+- $\eta$ ordering is interleaved per SN: $(m^*_1, X_{1,1}, C_1, \ldots)$ — the
+  740×740 blocks are stride-3 slices. Only v6 matrices are valid: the V5 release
+  note records that `C_stat.fits` was previously "not positive".
+- `sigma_mu.txt` columns are (sigma_coh, sigma_lens, z) — the third column is a
+  redshift, not an uncertainty; the peculiar-velocity diagonal term is computed
+  from it as `(5*150/3e5)/(ln 10 * z)` per the release `example.py` (its `3e5`
+  approximation of $c$ is kept verbatim in `janus_refit.jla` for bit-comparable
+  construction). Row order matches `jla_lcparams.txt` (max $|\Delta z| < 5\times
+  10^{-7}$ over the full sequence, tested).
+- The official `jla.cc` adds the per-SN diagonal statistical term
+  $d_{mb}^2 + (\alpha\,d_{x1})^2 + (\beta\,d_{color})^2 + 2\alpha\,cov_{m,s}
+  - 2\beta\,cov_{m,c} - 2\alpha\beta\,cov_{s,c}$ on top of the six compressed
+  blocks — the propagated-diagonal reading used by arm-A variant A2 below.
+
+**Redshift convention — documented divergence inside the release.** The ReadMe
+states "note both zcmb and zhel are needed to compute the luminosity distance",
+but the executable reference `src/test.cc` — the test documented by the ReadMe to
+reproduce $-2\ln L = 682.9$ — evaluates the model as
+`mu[i] = 5*log10(D_L(zcmb)) + 25` at **zcmb alone** (CLASS background,
+$\Omega_m = 0.295$, $h = 0.70$, with small radiation terms our flat
+matter+$\Lambda$ evaluator omits — sub-mmag at $z \le 1.3$). Resolution,
+pre-registered here before any fit: the primary convention for all v1.1 fits is
+the executable reference (zcmb alone); the heliocentric factor
+$5\log_{10}[(1+z_{hel})/(1+z_{cmb})]$ is measured as a labeled sensitivity (§9.2),
+never silently adopted.
+
+**Identifiability note.** Under analytic offset profiling (≡ fitting the 2018
+"cst"), any constant added to $\hat\mu$ is absorbed: the level of $M_B^1$ has no
+effect on any fit below, and of $\Delta_M$ only the *differential* between the
+two host-mass bins acts. The fixed nuisances that actually shape the results are
+$\alpha$, $\beta$ and the $\Delta_M$ step differential — which is why the arm-A
+grid varies the step treatment explicitly.
+
+**Arithmetic observation, recorded before any run (non-binding).** P1 reports
+$\chi^2 = 657$ with 738 dof at *fixed* nuisances, while Betoule et al. obtain
+682.9 with 735 dof *fitting* 5 parameters under the full covariance. This puts
+the "full covariance" reading of P1 in tension (without refuting it — the $q_0$
+family is not nested in flat ΛCDM) and motivates the diagonal readings as
+candidates. This observation is reported here for transparency and is not a gate.
+
+### 9.2 Pre-registration for arms A and B *(committed before any real-data JLA fit)*
+
+Commit order: this section is committed before the first fit on real JLA data
+(including the anchor run below, whose $\chi^2$ would otherwise leak the fate of
+variant A4). The arm-A grid was validated by Téo's GO (2026-06-10) and is
+**closed**: no variant will be added after any number is seen.
+
+**Anchor gate (arm B, ΛCDM — the only fit run at M12).** Flat ΛCDM on JLA, full
+$C(\alpha,\beta)$ at the Table 10 stat+sys nuisances, offset profiled, z = zcmb:
+
+- **Gate: $|\Omega_m - 0.295| \le 2 \times 0.034$.** Outside the gate the
+  conclusion is "pipeline bug until proven otherwise" (the §6.3 Keeley logic),
+  never "interesting cosmology". Encoded as constants in `janus_refit.jla`, an
+  auto-skip pytest assertion, and a guard in the run script.
+- The *conditional* curvature $\sigma(\Omega_m)$ (nuisances fixed) will be smaller
+  than the published *marginal* 0.034 — expected, documented, not gated.
+- The fit $\chi^2$ is reported next to the published 682.9/735 (fixed vs fitted
+  nuisances; radiation-free evaluator) — reported, not gated.
+
+**Arm A (M13): 4 error models × 2 step treatments = 8 runs, all reported.** Free
+parameters $q_0$ + offset (profiled ≡ "cst" fitted, §6.1); nuisances fixed at
+Table 10 "JLA (stat+sys)"; z = zcmb; full 740 SNe; dof = 738.
+
+- **A1 "diag-dmb"**: diagonal $\chi^2$, $\sigma_i = d_{mb}$ as released (already
+  contains intrinsic dispersion, lensing and redshift uncertainty; nothing added).
+- **A2 "diag-propagated"**: $\sigma_{\mu,i}^2 = d_{mb}^2 + (\alpha d_{x1})^2 +
+  (\beta d_{color})^2 + 2\alpha\,cov_{m,s} - 2\beta\,cov_{m,c} -
+  2\alpha\beta\,cov_{s,c}$ (the `jla.cc` per-SN diagonal — the natural reading of
+  someone building $\hat\mu$ from the lcparams file alone).
+- **A3 "diag-full-C"**: $\sigma_i^2 = \mathrm{diag}\,C(\alpha,\beta)$ (all A4
+  terms, correlations dropped).
+- **A4 "full-cov"**: the full $C(\alpha,\beta)$ (the Betoule estimator at fixed
+  nuisances).
+- Each × (i) host-mass step applied (the "M(G)" reading) / (ii) single $M_B^1$, no
+  step.
+- **Sensitivities** (on the principal variant only, reported as $\delta q_0$, not
+  as variants): zhel factor applied; Table 10 "JLA (stat)" nuisance row instead of
+  stat+sys (its values to be re-extracted from the paper at use time — the stat
+  row was read once this session but not double-rendering-verified). Rationale for
+  demoting these to sensitivities: both effects are expected small and are
+  orthogonal to the central unspecified-error-model ambiguity; measuring them as
+  $\delta q_0$ on the selected variant bounds their impact without multiplying the
+  grid.
+
+**Reproduction criteria (validated by Téo's GO, 2026-06-10; targets
+$q_0^* = -0.087$, $\sigma^* = 0.015$, $\chi^{2*} = 657$, dof 738).** Per variant:
+
+- **C1 (central value):** $|q_0 - q_0^*| \le \sigma^* = 0.015$; sub-label
+  "strong" if $\le 0.5\sigma^* = 0.0075$.
+- **C2 (information content):** $\sigma(q_0) \in [\tfrac{2}{3}\sigma^*,
+  1.5\sigma^*] = [0.010, 0.0225]$.
+- **C3 (error model):** $|\chi^2 - 657| \le 20$.
+- **Principal-variant selection rule:** among variants passing C1∧C2∧C3, the one
+  with smallest $|\chi^2 - 657|$; if none passes, the one with smallest
+  $|q_0 - q_0^*|$, reported as "non-reproduction, least-distant variant".
+- **Verdict:** "method reproduced and error model identified" if ≥ 1 variant
+  passes C1∧C2∧C3; several passers → all reported (partial identification); none
+  → reproduction failure reported as-is with the documented method assumptions.
+- No threshold is re-tuned after seeing any number. The [TESTS] item "arm A vs
+  published targets" is satisfied by the §9.3 report plus a pytest pinning the
+  *measured* numbers once committed — never an assertion that the criteria pass
+  (a non-reproduction is a result, not a CI failure).
+
+**Arm B (M14): the v1.0 pipeline on JLA.** Full $C(\alpha,\beta)$ at the stat+sys
+nuisances, `MarginalizedChi2` + `fit_lcdm`/`fit_janus`/`fit_milne` unchanged,
+curvature uncertainties (§6.2), AIC/BIC as in §6.7. No MCMC in v1.1 (accepted at
+GO): the v1.0 M8 cross-validation tied curvature to MCMC $\sigma$s, and the
+$-15.3\%$ Janus deviation came from the $q_0 = 0$ boundary truncation, which is
+negligible if the JLA best fit sits near the published $-0.087$ ($\gtrsim 5\sigma$
+from the boundary); if any JLA minimum proves non-parabolic or boundary-adjacent,
+STOP and escalate before any sampling. Non-regression: the arm-B code path must
+reproduce the frozen v1.0 Pantheon+ numbers (`janus_refit.reference`) exactly.
+
+**Attribution layout (filled at M14, §9.5).** $\Delta_{data} = q_0(B, JLA) -
+q_0(v1.0, Pantheon+)$; $\Delta_{method} = q_0(A) - q_0(B)$. Mandated statement
+(Téo, GO 2026-06-10), to appear with the table: the decomposition is
+path-dependent — $\Delta_{method}$ is measured on JLA and $\Delta_{data}$ with
+method B; the "method A on Pantheon+" cell stays empty (out of scope), so a
+method×data interaction term is not excluded.

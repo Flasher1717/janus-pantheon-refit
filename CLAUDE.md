@@ -7,6 +7,8 @@ Pantheon+, compared against flat ΛCDM and Milne with one shared pipeline.
 ## Sources of truth
 
 - `SPEC.md` — full project spec (verbatim kickoff prompt). Never edit it.
+- `SPEC_V11.md` — v1.1 extension spec (verbatim kickoff prompt, JLA refit). Never
+  edit it either.
 - `RESULTS.md` §2 — the ONLY reference for model equations, extracted from the source
   papers with page numbers. Never write a physics equation from memory; every
   implemented formula must cite paper + equation number from that section.
@@ -51,6 +53,11 @@ python -m uv run python scripts/download_data.py   # ONLY network step, one-time
   a-priori ~1400-1500 with Téo's GO (2026-06-10), pre-registered before any
   Janus/Milne chi2 was seen — see RESULTS.md §6. Outside the gate, the conclusion
   is "pipeline bug", never "interesting cosmology".
+- JLA anchor (v1.1): best-fit flat-ΛCDM Omega_m on JLA (740 SNe, full
+  C(alpha,beta) at the Betoule Table 10 stat+sys nuisances, offset profiled,
+  z = zcmb): |Omega_m − 0.295| ≤ 2×0.034 (Betoule et al. 2014, SNe alone).
+  Pre-registered in RESULTS.md §9.2 before any real-data JLA fit. Outside the
+  gate, the conclusion is "pipeline bug", never "interesting cosmology".
 
 ## Honesty rules
 
