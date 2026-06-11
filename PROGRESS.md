@@ -230,7 +230,18 @@ Reopened the same day by the v1.1 extension (SPEC_V11.md) — Session 3 below.
   path-dependent; consistency: pre-registration commit order verified in git).
 - Quality: ruff + format + pyright strict green; 88 passed + 1 xpassed.
 
+- Pre-tag GO (Téo, 2026-06-10): the flagged post-hoc call was replaced by a
+  measured cross-check — express MCMC of the arm-B Janus posterior on JLA,
+  section 6.5 protocol, NEW seed 20260612, truncated-Gaussian prediction
+  committed before the run (commit 7591857). Measured: tau 24.40 (n/tau 164,
+  converged), q0 = -0.065431 (+0.027424/-0.026888) median 16/84%, std 0.026595
+  = 0.9411 x curvature sigma -> 20% STOP gate PASS; std prediction confirmed
+  within 3%; predicted asymmetry direction unresolved (1.6 MC-std); the
+  P(q0 > -0.02) excess (3 MC-std) tracks the measured profile
+  non-parabolicity. RESULTS.md section 9.4 updated with the
+  prediction/measurement pair.
+
 ### Next
-- STOP before tag v1.1.0 (SPEC_V11): awaiting Téo's GO for the tag (and push).
-  Open point flagged for that review: the post-hoc no-trigger call on the
-  no-MCMC escape hatch (RESULTS.md section 9.4).
+- Tag v1.1.0 + push + GitHub release (factual notes, the three q0 of the
+  attribution chain, link to RESULTS.md section 9), per the pre-tag GO.
+  CI must be green before anything is closed (v1.0 M11 rule).

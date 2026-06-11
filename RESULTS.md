@@ -1024,7 +1024,38 @@ domain (`scipy.stats.truncnorm`):
 
 STOP rule (GO): an MCMC-vs-curvature std deviation beyond 20% stops the tag.
 
-*(Measured results to be appended here after the run.)*
+**Measured (run 2026-06-10 on this host, seed 20260612,
+`scripts/run_jla_mcmc.py`; chain persisted to disk before any gate
+evaluation).** $\tau = 24.40$, $n_{steps}/\tau = 163.9$ ($> 50$: converged),
+burn-in 74, thinning 12, mean acceptance 0.810, 10,464 retained samples.
+Posterior, in the §7.2 format: $q_0 = -0.065431\ (+0.027424 / -0.026888)$
+(median, 16/84%).
+
+| Quantity | Predicted (truncated Gaussian) | Measured (MCMC) |
+|---|---|---|
+| std | $0.027420$ ($0.9703 \times \sigma_{curv}$) | $0.026595$ ($0.9411 \times \sigma_{curv}$) |
+| mean | $-0.067578$ | $-0.065321$ |
+| $q_{16}/q_{50}/q_{84}$ | $-0.095157 / -0.067205 / -0.039646$ | $-0.092319 / -0.065431 / -0.038007$ |
+| $(q_{84}-q_{50})/(q_{50}-q_{16})$ | $0.9859$ | $1.0199$ (MC std $0.0217$) |
+| $P(q_0 > -0.02)$ | $0.0399$ | $0.0463$ (MC std $0.0021$) |
+
+MC stds from a seeded block bootstrap of the persisted chain (block length 8,
+2000 resamples). Reading:
+
+- **STOP gate: PASS.** The MCMC std deviates from the curvature $\sigma$ by
+  5.9% ($< 20\%$); the std prediction itself is confirmed within 3.0%.
+- The predicted asymmetry *direction* ($q_{84}-q_{50} < q_{50}-q_{16}$) is not
+  confirmed: the measured ratio $1.0199$ sits $1.6$ MC-std from the predicted
+  $0.9859$ — the sign of this small effect is unresolved at this chain length.
+- $P(q_0 > -0.02)$ exceeds the prediction by $0.0064$ ($3.0$ MC-std). This
+  excess and the $\ge 1$ asymmetry ratio both go in the direction implied by
+  the measured profile non-parabolicity above the minimum
+  ($\chi^2(q_0 + 2\sigma) - \chi^2_{min} = 3.655 < 4$): the likelihood is
+  shallower than Gaussian toward $q_0 = 0$, so the true posterior carries more
+  mass there than the truncated-Gaussian model — the same §6.6/§7.2 pattern of
+  companion quantities deviating exactly where the Gaussian approximation does.
+- No reported arm-B number changes; the curvature $\sigma(q_0)$ is confirmed by
+  sampling at the 6% level.
 
 **Non-regression (SPEC_V11 [TESTS]).** The exact arm-B code path
 (`MarginalizedChi2` + `fit_lcdm`/`fit_janus`/`fit_milne`) re-derives the frozen
