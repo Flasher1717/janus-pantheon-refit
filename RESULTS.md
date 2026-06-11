@@ -1000,22 +1000,31 @@ $\sigma_{coh}$ was tuned by Betoule et al. per survey via REML, so absolute
 $\chi^2/\mathrm{dof}$ is not goodness-of-fit evidence; only same-covariance
 differences are read.
 
-**Janus minimum diagnostics (the §9.2 no-MCMC escape hatch, checked).** The
-minimum is interior and close to parabolic: $\chi^2(q_0 \pm 1\sigma) -
-\chi^2_{min} = 0.955 / 1.050$ (parabola: 1) and $\chi^2(q_0 \pm 2\sigma) -
-\chi^2_{min} = 3.655 / 4.424$ (parabola: 4). Distance to the $q_0 = 0$ domain
-boundary: $2.37\sigma$. Transparency note: §9.2 justified the no-MCMC decision
-anticipating a best fit "near the published $-0.087$ ($\gtrsim 5\sigma$ from the
-boundary)"; the measured arm-B fit sits at $2.37\sigma$ instead. The §9.2 STOP
-trigger ("non-parabolic or boundary-adjacent") carried no numeric threshold, so
-the no-trigger call here is post-hoc and made unilaterally in-session; it is
-flagged for Téo's review at the pre-tag STOP. Its substance: v1.1 quotes only
-local curvature uncertainties (no Bayesian interval is derived, so prior
-truncation at $q_0 = 0$ affects nothing that is reported), the profile numbers
-above bound the non-parabolicity directly, and the minimum is interior. A
-posterior under the bounded prior would be truncation-affected to a degree not
-measured here (v1.0 measured $-15.3\%$ on $\sigma$ at $1.42\sigma$ from the
-boundary; this minimum sits at $2.37\sigma$); none is quoted.
+**Janus minimum diagnostics and MCMC cross-check (pre-tag GO, Téo
+2026-06-10).** The minimum is interior and close to parabolic:
+$\chi^2(q_0 \pm 1\sigma) - \chi^2_{min} = 0.955 / 1.050$ (parabola: 1) and
+$\chi^2(q_0 \pm 2\sigma) - \chi^2_{min} = 3.655 / 4.424$ (parabola: 4).
+Distance to the $q_0 = 0$ domain boundary: $2.37\sigma$ — §9.2's no-MCMC
+justification had anticipated $\gtrsim 5\sigma$, so rather than a unilateral
+no-trigger call on the escape hatch, the pre-tag GO resolves the discrepancy
+with a measurement: an express MCMC of the arm-B Janus posterior on JLA,
+protocol identical to §6.5 (emcee, NEW fixed seed 20260612, flat prior on the
+open validity domain $(-0.384880, 0)$, convergence $n_{steps} > 50\tau$,
+burn-in $\lceil 3\tau \rceil$, thinning $\lfloor \tau/2 \rfloor$), with the
+following prediction committed BEFORE the run (the §6.6 pattern), derived from
+the Gaussian $\mathcal{N}(-0.066887, 0.028259^2)$ truncated to the prior
+domain (`scipy.stats.truncnorm`):
+
+- predicted std $= 0.027420$, i.e. ratio $0.9703$ to the curvature $\sigma$ —
+  the expected truncation effect at $2.37\sigma$ from the boundary;
+- predicted mean $= -0.067578$; predicted $q_{16}/q_{50}/q_{84} =
+  -0.095157 / -0.067205 / -0.039646$; predicted slight asymmetry
+  $q_{84}-q_{50} = 0.027558 < q_{50}-q_{16} = 0.027952$ (ratio $0.9859$);
+- predicted $P(q_0 > -0.02) = 0.0399$.
+
+STOP rule (GO): an MCMC-vs-curvature std deviation beyond 20% stops the tag.
+
+*(Measured results to be appended here after the run.)*
 
 **Non-regression (SPEC_V11 [TESTS]).** The exact arm-B code path
 (`MarginalizedChi2` + `fit_lcdm`/`fit_janus`/`fit_milne`) re-derives the frozen

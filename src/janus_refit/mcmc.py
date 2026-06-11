@@ -57,6 +57,12 @@ class ChainSpec:
 LCDM_SPEC = ChainSpec(model="FlatLCDM", param="omega_m", seed=SEED_LCDM)
 JANUS_SPEC = ChainSpec(model="Janus", param="q0", seed=SEED_JANUS)
 
+SEED_JANUS_JLA = 20260612
+JANUS_JLA_SPEC = ChainSpec(model="Janus", param="q0", seed=SEED_JANUS_JLA)
+"""v1.1 pre-tag GO (Téo, 2026-06-10): express MCMC cross-check of the arm-B Janus
+fit on JLA, same protocol as above, NEW documented seed (v1.0 used 20260610 and
+20260611). Prediction committed before the run in RESULTS.md section 9.4."""
+
 
 @dataclass(frozen=True)
 class MCMCResult:
