@@ -208,8 +208,20 @@ Implementation decisions, with reasons:
 - Cut: $z_{HD} > 0.01$ to limit peculiar-velocity contamination, plus exclusion of the
   Cepheid-host calibrator rows (`IS_CALIBRATOR == 0`) — the standard cosmology-only
   choice when not using the SH0ES Cepheid calibration. **Realized sample: 1580 SNe**
-  ($z_{HD} \in [0.01016, 2.26137]$), matching the cosmology sample size of the
-  Pantheon+ analysis (Brout et al. 2022).
+  ($z_{HD} \in [0.01016, 2.26137]$), matching the sample of Keeley, Shafieloo &
+  L'Huillier 2024 (arXiv:2212.07917) — the configuration our §6.3 chi2 gate is
+  anchored to.
+  *Attribution erratum (2026-06-12):* this sentence originally credited the 1580
+  count to "the Pantheon+ analysis (Brout et al. 2022)". The string "1580" does
+  not appear in Brout et al. 2022 (checked on the arXiv and ApJ texts); 1580 is
+  the Hubble-diagram count of the SH0ES-mode selection
+  ($z_{HD} > 0.01\ |\ \mathrm{IS\_CALIBRATOR}$, minus the 10 calibrators above
+  the cut) as used by Keeley et al. The mechanics were established at the
+  sources in the companion project (desi-w0wa-refit, RESULTS.md §2.2): the
+  cosmology likelihood DESI uses (cobaya `sn.pantheonplus`) cuts $z_{HD} > 0.01$
+  alone, yielding 1590 SNe. No number in this document changes: our gate anchor
+  (Keeley's $\chi^2 = 1387.10$) was computed on the 1580-SN configuration we
+  replicate.
 
 ## 5. Model implementations and oracle validation *(milestones M5-M6, 2026-06-09)*
 

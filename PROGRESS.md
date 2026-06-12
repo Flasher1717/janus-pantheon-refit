@@ -250,3 +250,13 @@ link to RESULTS.md section 9 at the tag). CI green on the full matrix
 (ubuntu/windows x 3.12/3.14, run 27319840660) before this closing note, per the
 v1.0 M11 rule. No v1.0 result was modified; the frozen Pantheon+ numbers
 re-derive through the arm-B code path (non-regression test, green).
+
+## Doc erratum — 2026-06-12
+
+Attribution fix in RESULTS.md §4 (doc-only, no number changed): the 1580-SN
+count was credited to Brout et al. 2022; the string "1580" does not appear in
+that paper. 1580 is the Hubble-diagram count of the SH0ES-mode selection as
+used by Keeley et al. 2024 — the very configuration our §6.3 gate is anchored
+to. Mechanics established at the sources in the companion project
+desi-w0wa-refit (RESULTS.md §2.2, published at its tag v1.0.0). Erratum note
+left inline in §4. Tag v1.1.1 (doc-only) pending Téo's push GO.
