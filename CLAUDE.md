@@ -75,6 +75,9 @@ python -m uv run python scripts/download_data.py   # ONLY network step, one-time
 - Atomic commits, clean `main`, repo-local identity (Téo Alletz / teo.alletz@gmail.com
   — distinct from the global Kodia identity).
 - NEVER `git push` without explicit GO (GitHub perso vs org still undecided).
+- Before any push: `gh auth status` must show Flasher1717; otherwise `gh auth
+  switch` (the keyring also holds the Kodiaquebec account, which silently
+  reactivates and gets 403 on these repos).
 - Commit messages end with `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`.
 
 ## Scope guards
