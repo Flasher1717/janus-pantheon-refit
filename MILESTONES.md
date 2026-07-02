@@ -30,3 +30,14 @@ v1.1 extension (SPEC_V11.md, 2026-06-10) — JLA controlled refit:
       and validated by Téo
 - [x] M14 — Arm B (clean 3-model comparison on JLA) + final §9 + attribution table.
       STOP before tag v1.1.0
+
+CI maintenance (2026-07-02) — GitHub Actions Node 24 runtime:
+
+- [x] Bump `actions/checkout` @v4 -> @v6 and `astral-sh/setup-uv` @v5 -> @v8.2.0
+      (both node24; anticipates GitHub's forced Node 24 switch on 2026-06-16).
+      Committed on branch `chore/ci-node24` (3b77343); PR #1 merged 2026-07-02
+      (merge commit ed29b93). CI run 28563639980 success 4/4
+      (ubuntu/windows × py3.12/3.14), zero Node 20 deprecation annotation. Mirror
+      of the desi-w0wa-refit sibling bump. No re-tag (tooling maintenance):
+      v1.1.1 stays the latest release. CI-only: no src / tests / results / SPEC
+      touched.
